@@ -1,2 +1,5 @@
 out
 .vs
+*.exe.id*
+*.exe.nam
+*.exe.til
