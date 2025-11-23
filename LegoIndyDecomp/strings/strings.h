@@ -17,13 +17,13 @@ struct FilePathContainer {
 	char path[16]; // 0x34
 	int pathLength; // 0x44
 	char pad2[4]; // 0x48
-	char str1[16]; // 0x4C (size is a guess)
+	char drivePrefix[16]; // 0x4C (size is a guess)
 	char pad3[16]; // 0x5C
 	char someStr[32]; // 0x6C
 	char pad4[32]; // 0x8C
-	char str2[16]; // 0xAC
+	char relativePath[16]; // 0xAC
 	char pad5[368]; // 0xBC
-	int (__cdecl* func1)(FilePathContainer*, char*, char*, int); // 0x22C
+	int (__cdecl* pathJoiningFunction)(FilePathContainer*, char* fpath_out, char* fpath_in, int size); // 0x22C
 	int (__cdecl* func2)(FilePathContainer*); // 0x230
 };
 

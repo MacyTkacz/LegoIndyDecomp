@@ -137,7 +137,7 @@ LABEL_13:
     return result;
 }
 
-int __cdecl JoinPath(FilePathContainer* pFilePathContainer, char* fpath_out, char* fpath_in, int maxLength) {
+int __cdecl JoinPath(FilePathContainer* pFilePathContainer, char* fpath_out, char* fpath_in, int size) {
 
     char* structPath;
     char* structPathOffsetIntoPath;
@@ -165,25 +165,25 @@ PATH_IS_ABSOLUTE:
 			goto LABEL_8;
 		}
 
-		_strcpy(charBuffer, pFilePathContainer->str1);
-		_strcat(charBuffer, pFilePathContainer->str2);
+		_strcpy(charBuffer, pFilePathContainer->drivePrefix);
+		_strcat(charBuffer, pFilePathContainer->relativePath);
 		_strcat(charBuffer, structPathOffsetIntoPath);
 
     }
     else {
         
-        _strcpy(charBuffer, pFilePathContainer->str1);
-        _strcat(charBuffer, pFilePathContainer->str2);
+        _strcpy(charBuffer, pFilePathContainer->drivePrefix);
+        _strcat(charBuffer, pFilePathContainer->relativePath);
         _strcat(charBuffer, fpath_in);
 
     }
 
 LABEL_8:
-    structStr1Length = _strlen(pFilePathContainer->str1);
+    structStr1Length = _strlen(pFilePathContainer->drivePrefix);
     MakePathUniform(&pFilePathContainer->pathTypeInfo, &charBuffer[structStr1Length]);
     ResolveRelativePathSpecifier(&pFilePathContainer->pathTypeInfo, charBuffer);
 
-    if (_strlen(charBuffer) >= maxLength)
+    if (_strlen(charBuffer) >= size)
         return 0;
 
     _strcpy(fpath_out, charBuffer);
