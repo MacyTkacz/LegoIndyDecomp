@@ -30,8 +30,8 @@ struct Hashes {
 // if not, checks whether path_in is in struct's stringsDataBuffer array
 // if so, adds the hash to the hashes array
 // returns the index of path_in's hash
-__int16 __cdecl GetHashIndex(Hashes* pHashesStruct, char* path_in);
+int __cdecl GetHashIndex(Hashes* pHashesStruct, char* path_in);
 
-int __cdecl func(Hashes* pHashesStruct, char* fname);
+int __cdecl GetFileDataIndex(Hashes* pHashesStruct, char* fpath);
 
 #endif // LEGOINDY_HASH_H

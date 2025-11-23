@@ -1,4 +1,5 @@
 #include "strings.h"
+#include <strings/std.h>
 
 char *__cdecl MakePathUniform(PathTypeInfo *pathTypeInfo, char *path) {
   char *current_path_offset; // eax
@@ -95,31 +96,98 @@ char *__cdecl GetStringStartingWith(char *str, const char *starts_with) {
   return result;
 }
 
-int __cdecl _strcmpi(char* str1, char* str2) {
+char* __cdecl ResolveRelativePathSpecifier(PathTypeInfo* pPathTypeInfo, char* path) {
 
-    char str1_current_char;
-    char str2_current_char;
+    char* result;
+    char* currentPathOffset;
+    char separator;
+    char currentBacktrackChar;
 
-    if (!str1)
-        return -1;
-    if (str2) {
-        while (1) {
-            str1_current_char = *str1;
-            if ( (*str1 - 97) <= 0x19u || str1_current_char >= 0xE0u )
-                str1_current_char -= 32;
-            str2_current_char = *str2;
-            if ( (*str2 - 97) <= 0x19u || str2_current_char >= 0xE0u)
-                str2_current_char -= 32;
-            if (str1_current_char > str2_current_char)
-                break;
-            if (str1_current_char < str2_current_char)
-                return -1;
-            ++str1;
-            ++str2;
-            if (!str1_current_char || !str2_current_char)
-                return 0;
+    result = path;
+    for (currentPathOffset = path; *currentPathOffset; ++result) {
+        
+        separator = pPathTypeInfo->separator;
+        if (currentPathOffset[0] == separator &&
+            currentPathOffset[1] == '.' &&
+            currentPathOffset[2] == '.' &&
+            currentPathOffset[3] == separator)
+        {
+            result = currentPathOffset;
+
+            if (currentPathOffset > path) {
+                while (1) {
+                    currentBacktrackChar = *--result;
+                    if (currentBacktrackChar == separator) {
+                        currentPathOffset += 3;
+                        goto LABEL_13;
+                    }
+                    if (currentBacktrackChar == ':')
+                        break;
+                    if (result <= path)
+                        goto LABEL_13;
+                }
+                ++result;
+                currentPathOffset += 4;
+            }
         }
+LABEL_13:
+        *result = *currentPathOffset++;
     }
+    *result = 0;
+    return result;
+}
+
+int __cdecl JoinPath(FilePathContainer* pFilePathContainer, char* fpath_out, char* fpath_in, int maxLength) {
+
+    char* structPath;
+    char* structPathOffsetIntoPath;
+    char structPathOffsetIntoPathChar;
+    char charBuffer[512];
+    int structStr1Length;
+    int structPathLength;
+
+    structPath = pFilePathContainer->path;
+    structPathLength = _strlen(pFilePathContainer->path);
+
+    if (GetStringStartingWith(fpath_in, ":"))
+        goto PATH_IS_ABSOLUTE;
+
+    if (!_strncmp(fpath_in, structPath, structPathLength)) {
+
+        // fpath_in is relative and the same as structPath
+        structPathLength = _strlen(structPath);
+		structPathOffsetIntoPathChar = fpath_in[structPathLength];
+		structPathOffsetIntoPath = &fpath_in[structPathLength];
+
+		if (structPathOffsetIntoPathChar == '\\' || structPathOffsetIntoPathChar == '/') {
+PATH_IS_ABSOLUTE:
+			_strcpy(charBuffer, fpath_in);
+			goto LABEL_8;
+		}
+
+		_strcpy(charBuffer, pFilePathContainer->str1);
+		_strcat(charBuffer, pFilePathContainer->str2);
+		_strcat(charBuffer, structPathOffsetIntoPath);
+
+    }
+    else {
+        
+        _strcpy(charBuffer, pFilePathContainer->str1);
+        _strcat(charBuffer, pFilePathContainer->str2);
+        _strcat(charBuffer, fpath_in);
+
+    }
+
+LABEL_8:
+    structStr1Length = _strlen(pFilePathContainer->str1);
+    MakePathUniform(&pFilePathContainer->pathTypeInfo, &charBuffer[structStr1Length]);
+    ResolveRelativePathSpecifier(&pFilePathContainer->pathTypeInfo, charBuffer);
+
+    if (_strlen(charBuffer) >= maxLength)
+        return 0;
+
+    _strcpy(fpath_out, charBuffer);
+
     return 1;
 
 }

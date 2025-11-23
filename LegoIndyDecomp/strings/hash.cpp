@@ -1,7 +1,8 @@
 #include "hash.h"
 #include <strings/strings.h>
+#include <strings/std.h>
 
-__int16 __cdecl GetHashIndex(Hashes *pHashesStruct, char *path_in) {
+int __cdecl GetHashIndex(Hashes *pHashesStruct, char *path_in) {
   char *current_path_offset; // ecx
   char current_char; // al
   int path_hash; // edx
@@ -96,12 +97,12 @@ LABEL_7:
   return hash_index;
 }
 
-int __cdecl func(Hashes* pHashesStruct, char* fname) {
+int __cdecl GetFileDataIndex(Hashes* pHashesStruct, char* fpath) {
 
 	Hash* hashArray;
 	Hash* currentHash;
 
-	char* startOfFname;
+	char* startOfFpath;
 	char* bufferOffset;
 	char* currentDirectoryName;
 	char* subName;
@@ -111,22 +112,22 @@ int __cdecl func(Hashes* pHashesStruct, char* fname) {
 	char currentChar;
 	char path[256];
 
-	int fnameToBufferDelta;
+	int fpathToBufferDelta;
 	int hashIndex;
 	__int16 hashValue;
 
-	startOfFname = fname;
-	if (*fname == '@')
-		startOfFname += 4;
+	startOfFpath = fpath;
+	if (*fpath == '@')
+		startOfFpath += 4;
 	bufferOffset = path;
 
-	if (startOfFname) {
-		currentChar = *startOfFname;
-		if (*startOfFname) {
-			fnameToBufferDelta = startOfFname - path;
+	if (startOfFpath) {
+		currentChar = *startOfFpath;
+		if (*startOfFpath) {
+			fpathToBufferDelta = startOfFpath - path;
 			do {
 				*bufferOffset = currentChar;
-				currentChar = (bufferOffset++)[fnameToBufferDelta + 1];
+				currentChar = (bufferOffset++)[fpathToBufferDelta + 1];
 			}
 			while (currentChar);
 		}
