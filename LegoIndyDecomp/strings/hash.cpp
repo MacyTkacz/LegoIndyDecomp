@@ -2,7 +2,7 @@
 #include <strings/strings.h>
 #include <strings/std.h>
 
-int __cdecl GetHashIndex(Hashes *pHashesStruct, char *path_in) {
+int GetHashIndex(Hashes *pHashesStruct, char *path_in) {
   char *current_path_offset; // ecx
   char current_char; // al
   int path_hash; // edx
@@ -61,7 +61,7 @@ LABEL_7:
               final_str_offset = &current_str_offset[len_str + 1];
               if ( ((unsigned __int8)final_str_offset & 1) != 0 )
                 ++final_str_offset;
-              return *(__int16 *)final_str_offset;// that string's hash index?
+              return *(short *)final_str_offset;// that string's hash index?
             }
           }
         }
@@ -97,7 +97,7 @@ LABEL_7:
   return hash_index;
 }
 
-int __cdecl GetFileDataIndex(Hashes* pHashesStruct, char* fpath) {
+int GetFileDataIndex(Hashes* pHashesStruct, char* fpath) {
 
 	Hash* hashArray;
 	Hash* currentHash;
@@ -114,7 +114,7 @@ int __cdecl GetFileDataIndex(Hashes* pHashesStruct, char* fpath) {
 
 	int fpathToBufferDelta;
 	int hashIndex;
-	__int16 hashValue;
+	short hashValue;
 
 	startOfFpath = fpath;
 	if (*fpath == '@')

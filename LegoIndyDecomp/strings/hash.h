@@ -4,8 +4,8 @@
 // ===================== STRUCTS =====================
 
 struct Hash {
-	__int16 nextOnMatch;
-	__int16 nextOnNonmatch;
+	short nextOnMatch;
+	short nextOnNonmatch;
 	char* str;
 };
 
@@ -30,8 +30,8 @@ struct Hashes {
 // if not, checks whether path_in is in struct's stringsDataBuffer array
 // if so, adds the hash to the hashes array
 // returns the index of path_in's hash
-int __cdecl GetHashIndex(Hashes* pHashesStruct, char* path_in);
+int GetHashIndex(Hashes* pHashesStruct, char* path_in);
 
-int __cdecl GetFileDataIndex(Hashes* pHashesStruct, char* fpath);
+int GetFileDataIndex(Hashes* pHashesStruct, char* fpath);
 
 #endif // LEGOINDY_HASH_H
