@@ -15,8 +15,8 @@ int main() {
 
 	// structPath
 	*&s->pathTypeInfo.separator = '/';
-	strcpy_s((char*)&s->str1, 16, "C:/");
-	strcpy_s((char*)&s->str2, 16, "some/path/");
+	strcpy_s((char*)&s->drivePrefix, 16, "C:/");
+	strcpy_s((char*)&s->relativePath, 16, "some/path/");
 
 	// fpath
 	char* fpath = (char*)GetOnHeap<char[32]>();
