@@ -1,16 +1,17 @@
 ﻿#include "main.h"
 #include <iostream>
-#include <strings/lz2k.h>
+#include <fileio/fileio.h>
 
 int main() {
 
 	HEAP_INIT(16);
 
-	char* buff = (char*)GetOnHeap<char[12]>();
-	HEAP_HOOK(buff);
-	memcpy(buff, "LZ2K\0\x4\0\0\0\0\x1\0", 12);
+	char* fpath = (char*)GetOnHeap<char[64]>();
+	strcpy_s(fpath, 64, "C:/Users/thoma/OneDrive/Desktop/shaders.h");
 
-	std::cout << LZ2K_DecodeFileSize(buff) << std::endl;
+	FileIOManager* fiom = FileIOManager::Instance();
+	if (!fiom->CreateFileHandle((LPCSTR)fpath,FileAccessType::READ))
+		std::cout << "failed to create file handle" << std::endl;
 
 	HEAP_FREE();
 
