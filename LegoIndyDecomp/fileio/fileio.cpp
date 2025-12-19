@@ -1,23 +1,27 @@
 #include "fileio.h"
 
-static FileIOManager* FileIOManager::Instance() {
+// temporary initialization of critical section
+FileIOManager::FileIOManager() {
+	CriticalSectionsArray[0] = new CRITICAL_SECTION();
+}
+
+FileIOManager* FileIOManager::Instance() {
 	if (!_instance)
 		_instance = new FileIOManager();
 	return _instance;
 }
 
-int FileIOManager::InitializeNewCriticalSection() {
-	if (NumberOfCriticalSections > 12)
+int FileIOManager::AdvanceCriticalSection() {
+	if (CriticalSectionIndex > 12)
 		return 0;
-	NumberOfCriticalSections++;
-	InitializeCriticalSection(CriticalSectionsArray[NumberOfCriticalSections]);
-	CriticalSectionLockCount = CriticalSectionsArray[NumberOfCriticalSections].LockCount;
-	return NumberOfCriticalSections;
+	CriticalSectionIndex++;
+	InitializeCriticalSection(CriticalSectionsArray[CriticalSectionIndex]);
+	CriticalSectionLockCount = CriticalSectionsArray[CriticalSectionIndex]->LockCount;
+	return CriticalSectionIndex;
 }
 
 int FileIOManager::CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType) {
 
-	int v4;
 	int v5;
 
 	DWORD dwCreationDisposition = 0;
@@ -43,13 +47,13 @@ int FileIOManager::CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType)
 ACCESS_TYPE_INITIALIZED:
 
 	if (CriticalSectionIndex == -1)
-		CriticalSectionIndex = InitializeNewCriticalSection();
+		CriticalSectionIndex = AdvanceCriticalSection();
 	if (CriticalSectionIndex - 1 <= 11)
 		EnterCriticalSection(CriticalSectionsArray[CriticalSectionIndex]);
 
-	v4 = 0;
-	while (FileHandlesArray[i] != (HANDLE)-1) {
-		if (++i >= 64) {
+	int v4 = 0;
+	while (FileHandlesArray[v4] != (HANDLE)-1) {
+		if (++v4 >= 64) {
 			v5 = -1;
 			goto FILE_HANDLES_ARRAY_FULL;
 		}
@@ -76,19 +80,38 @@ bool FileIOManager::CloseFileHandle(int fileHandleIndex) {
 
 }
 
-int FileIOManager::Write(int fileHandleIndex, LPCVOID lpBuffer, int numberOfBytesToWrite) {
+
+void FileIOManager::CloseFileHandleID(int fileHandleID) {
+
+	if (fileHandleID >= 4096)
+		return;
+
+	if (fileHandleID >= 1024) {
+		// some other function()
+		return;
+	}
+
+	int fileHandleIndex = fileHandleID - 1;
+	while (CloseFileHandle(fileHandleIndex) < 0)
+		// some other function()
+
+	// TODO HERE
+
+}
+
+int FileIOManager::Write(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite) {
 
 	HANDLE hFile = FileHandlesArray[fileHandleIndex];
-	int numberOfBytesWritten = 0;
+	DWORD numberOfBytesWritten = 0;
 	bool success = WriteFile(hFile, lpBuffer, numberOfBytesToWrite, &numberOfBytesWritten, 0);
 	return success ? numberOfBytesWritten : 0;
 
 }
 
-int FileIOManager::Read(int fileHandleIndex, LPCVOID lpBuffer, int numberOfBytesToRead) {
+int FileIOManager::Read(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToRead) {
 
 	HANDLE hFile = FileHandlesArray[fileHandleIndex];
-	int numberOfBytesRead = 0;
+	DWORD numberOfBytesRead = 0;
 	ReadFile(hFile, lpBuffer, numberOfBytesToRead, &numberOfBytesRead, 0);
 	return numberOfBytesRead;
 
@@ -106,6 +129,7 @@ LARGE_INTEGER FileIOManager::MoveFilePointer(int fileHandleIndex, LARGE_INTEGER 
 	if (SetFilePointerEx(FileHandlesArray[fileHandleIndex], distToMove, &newFilePointer, moveMethod))
 		return newFilePointer;
 
-	return (LARGE_INTEGER)-1LL;
+	newFilePointer.QuadPart = -1;
+	return newFilePointer;
 
 }

@@ -12,22 +12,23 @@ enum FileAccessType { READ, CREATE, MODIFY };
 // singleton class that manages file IO
 class FileIOManager {
 public:
+	FileIOManager();
 	static FileIOManager* Instance();
 
-	int InitializeNewCriticalSection();
+	int AdvanceCriticalSection();
 	int CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType);
 	bool CloseFileHandle(int fileHandleIndex);
-	int Write(int fileHandleIndex, LPCVOID lpBuffer, int numberOfBytesToWrite);
-	int Read(int fileHandleIndex, LPCVOID lpBuffer, int numberOfBytesToRead);
+	void CloseFileHandleID(int fileHandleID);
+	int Write(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite);
+	int Read(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToRead);
 	LARGE_INTEGER MoveFilePointer(int fileHandleIndex, LARGE_INTEGER distToMove, int moveMethod);
 private:
 	static inline FileIOManager* _instance = 0;
 
-	static inline int NumberOfCriticalSections = -1;
+	static inline int CriticalSectionIndex = -1;
 	int CriticalSectionLockCount;
-	CRITICAL_SECTION CriticalSectionsArray[12];
+	CRITICAL_SECTION* CriticalSectionsArray[14];
 	HANDLE FileHandlesArray[32];
-	int CriticalSectionIndex;
 };
 
 // ===================== FUNCTIONS =====================
