@@ -29,6 +29,8 @@ struct FileHandleContainer {
 	FileDataContainer* pFileDataContainer;
 };
 
+
+
 // ===================== CLASSES =====================
 
 // singleton class that manages file IO
@@ -52,6 +54,8 @@ private:
 	CRITICAL_SECTION* CriticalSectionsArray[14];
 	HANDLE FileHandlesArray[32];
 	FileHandleContainer FileHandleContainersArray[32];
+	// closes FileBufferContainer or FilePointerInfo object
+	void CloseFileHandleID_1024to4095(int fileHandleID);
 };
 
 // ===================== FUNCTIONS =====================

@@ -3,6 +3,7 @@
 // temporary initialization of critical section
 FileIOManager::FileIOManager() {
 	CriticalSectionsArray[0] = new CRITICAL_SECTION();
+	memset(FileHandlesArray, (__int32)-1, 32);
 }
 
 FileIOManager* FileIOManager::Instance() {
@@ -80,17 +81,19 @@ bool FileIOManager::CloseFileHandle(int fileHandleIndex) {
 
 }
 
-
 void FileIOManager::CloseFileHandleID(int fileHandleID) {
 
+	// outside of valid ID range
 	if (fileHandleID >= 4096)
 		return;
 
+	// close FileBufferContainer or FilePointerInfo
 	if (fileHandleID >= 1024) {
-		// TODO: some other handle closing function()
+		CloseFileHandleID_1024to4095(fileHandleID);
 		return;
 	}
 
+	// close FileHandleContainer
 	int fileHandleIndex = fileHandleID - 1;
 	while (CloseFileHandle(fileHandleIndex) < 0);
 
@@ -101,6 +104,12 @@ void FileIOManager::CloseFileHandleID(int fileHandleID) {
 		pFileDataContainer->pFileHandleContainer = 0;
 
 	memset(pFileHandleContainer, 0, sizeof(FileHandleContainer));
+
+}
+
+void FileIOManager::CloseFileHandleID_1024to4095(int fileHandleID) {
+	
+	// NOT YET IMPLEMENTED
 
 }
 
