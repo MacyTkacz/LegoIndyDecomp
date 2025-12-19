@@ -87,15 +87,20 @@ void FileIOManager::CloseFileHandleID(int fileHandleID) {
 		return;
 
 	if (fileHandleID >= 1024) {
-		// some other function()
+		// TODO: some other handle closing function()
 		return;
 	}
 
 	int fileHandleIndex = fileHandleID - 1;
-	while (CloseFileHandle(fileHandleIndex) < 0)
-		// some other function()
+	while (CloseFileHandle(fileHandleIndex) < 0);
 
-	// TODO HERE
+	FileHandleContainer* pFileHandleContainer = &FileHandleContainersArray[fileHandleIndex];
+	FileDataContainer* pFileDataContainer = pFileHandleContainer->pFileDataContainer;
+
+	if (pFileDataContainer)
+		pFileDataContainer->pFileHandleContainer = 0;
+
+	memset(pFileHandleContainer, 0, sizeof(FileHandleContainer));
 
 }
 

@@ -5,7 +5,29 @@
 
 // ===================== STRUCTS =====================
 
+
 enum FileAccessType { READ, CREATE, MODIFY };
+
+struct FileHandleContainer;
+struct FileDataContainer {
+	FileHandleContainer* pFileHandleContainer;
+	int int1;
+	char dataBuffer[1024];
+};
+
+struct FileHandleContainer {
+	int fileHandleIndex;
+	char pad1[4];
+	LARGE_INTEGER filePointerPosition;
+	char pad2[8];
+	LARGE_INTEGER fileEndPosition;
+	int fileDataLength;
+	int positionIsUpToDate;
+	void* pSomething;
+	char pad3[4];
+	FileAccessType fileAccessType;
+	FileDataContainer* pFileDataContainer;
+};
 
 // ===================== CLASSES =====================
 
@@ -29,6 +51,7 @@ private:
 	int CriticalSectionLockCount;
 	CRITICAL_SECTION* CriticalSectionsArray[14];
 	HANDLE FileHandlesArray[32];
+	FileHandleContainer FileHandleContainersArray[32];
 };
 
 // ===================== FUNCTIONS =====================
