@@ -29,7 +29,13 @@ struct FileHandleContainer {
 	FileDataContainer* pFileDataContainer;
 };
 
-
+struct FileBufferContainer {
+	char* textBuffer;
+	char* textBufferEnd;
+	char* filePointerPosition;
+	int bSomeBool;
+	int bIsInUse;
+};
 
 // ===================== CLASSES =====================
 
@@ -42,7 +48,7 @@ public:
 	int AdvanceCriticalSection();
 	int CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType);
 	bool CloseFileHandle(int fileHandleIndex);
-	void CloseFileHandleID(int fileHandleID);
+	void CloseResource(int resourceID);
 	int Write(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite);
 	int Read(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToRead);
 	LARGE_INTEGER MoveFilePointer(int fileHandleIndex, LARGE_INTEGER distToMove, int moveMethod);
@@ -54,8 +60,9 @@ private:
 	CRITICAL_SECTION* CriticalSectionsArray[14];
 	HANDLE FileHandlesArray[32];
 	FileHandleContainer FileHandleContainersArray[32];
+	FileBufferContainer FileBufferContainersArray[1024];
 	// closes FileBufferContainer or FilePointerInfo object
-	void CloseFileHandleID_1024to4095(int fileHandleID);
+	DWORD CloseResource_1024to4095(int resourceID);
 };
 
 // ===================== FUNCTIONS =====================

@@ -81,20 +81,20 @@ bool FileIOManager::CloseFileHandle(int fileHandleIndex) {
 
 }
 
-void FileIOManager::CloseFileHandleID(int fileHandleID) {
+void FileIOManager::CloseResource(int resourceID) {
 
 	// outside of valid ID range
-	if (fileHandleID >= 4096)
+	if (resourceID >= 4096)
 		return;
 
 	// close FileBufferContainer or FilePointerInfo
-	if (fileHandleID >= 1024) {
-		CloseFileHandleID_1024to4095(fileHandleID);
+	if (resourceID >= 1024) {
+		CloseResource_1024to4095(resourceID);
 		return;
 	}
 
 	// close FileHandleContainer
-	int fileHandleIndex = fileHandleID - 1;
+	int fileHandleIndex = resourceID - 1;
 	while (CloseFileHandle(fileHandleIndex) < 0);
 
 	FileHandleContainer* pFileHandleContainer = &FileHandleContainersArray[fileHandleIndex];
@@ -107,9 +107,16 @@ void FileIOManager::CloseFileHandleID(int fileHandleID) {
 
 }
 
-void FileIOManager::CloseFileHandleID_1024to4095(int fileHandleID) {
+DWORD FileIOManager::CloseResource_1024to4095(int resourceID) {
 	
-	// NOT YET IMPLEMENTED
+	// close FilePointerInfo
+	if (resourceID >= 2048)
+		return 0; // NOT YET IMPLEMENTED
+
+	// close FileBufferContainer
+	*(&FileBufferContainersArray[resourceID].bIsInUse) = 0;
+	int fileBufferContainerOffset = 5 * resourceID - 5120;
+	return fileBufferContainerOffset;
 
 }
 

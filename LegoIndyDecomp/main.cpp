@@ -14,10 +14,12 @@ int main() {
 	if (fiom->CreateFileHandle((LPCSTR)fpath,FileAccessType::READ) == -1)
 		std::cout << "failed to create file handle" << std::endl;
 
-	char* buff = (char*)GetOnHeap<char[1024]>();
+	char* buff = (char*)GetOnHeap<char[4096]>();
 	HEAP_HOOK(buff);
 
-	fiom->Read(0, buff, 1024);
+	fiom->Read(0, buff, 4096);
+
+	fiom->CloseFileHandle(0);
 
 	std::cout << buff << std::endl;
 
