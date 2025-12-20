@@ -5,7 +5,6 @@
 
 // ===================== STRUCTS =====================
 
-
 enum FileAccessType { READ, CREATE, MODIFY };
 
 struct FileHandleContainer;
@@ -29,6 +28,8 @@ struct FileHandleContainer {
 	FileDataContainer* pFileDataContainer;
 };
 
+// ===================== CLASSES =====================
+
 class FileBufferContainer {
 public:
 	char* textBuffer; // 0x0
@@ -37,9 +38,6 @@ public:
 	int bSomeBool; // 0xC
 	int bIsInUse; // 0x10
 };
-
-
-// ===================== CLASSES =====================
 
 // singleton class that manages file IO
 class FileIOManager {
@@ -69,7 +67,5 @@ private:
 	// closes FileBufferContainer or FilePointerInfo object
 	DWORD CloseResource_1024to4095(int resourceID);
 };
-
-// ===================== FUNCTIONS =====================
 
 #endif // LEGOINDY_FILEIO_H
