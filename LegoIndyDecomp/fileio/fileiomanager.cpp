@@ -87,9 +87,14 @@ void FileIOManager::CloseResource(int resourceID) {
 	if (resourceID >= 4096)
 		return;
 
-	// close FileBufferContainer or FilePointerInfo
 	if (resourceID >= 1024) {
-		CloseResource_1024to4095(resourceID);
+
+		// close FilePointerInfo
+		if (resourceID >= 2048)
+			return; // NOT YET IMPLEMENTED
+
+		// close FileBufferContainer
+		*(&FileBufferContainersArray[resourceID].bIsInUse) = 0;
 		return;
 	}
 
@@ -104,19 +109,6 @@ void FileIOManager::CloseResource(int resourceID) {
 		pFileDataContainer->pFileHandleContainer = 0;
 
 	memset(pFileHandleContainer, 0, sizeof(FileHandleContainer));
-
-}
-
-DWORD FileIOManager::CloseResource_1024to4095(int resourceID) {
-	
-	// close FilePointerInfo
-	if (resourceID >= 2048)
-		return 0; // NOT YET IMPLEMENTED
-
-	// close FileBufferContainer
-	*(&FileBufferContainersArray[resourceID].bIsInUse) = 0;
-	int fileBufferContainerOffset = 5 * resourceID - 5120;
-	return fileBufferContainerOffset;
 
 }
 
