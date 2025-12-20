@@ -95,7 +95,7 @@ void FileIOManager::CloseResource(int resourceID) {
 
 	// close FileHandleContainer
 	int fileHandleIndex = resourceID - 1;
-	while (CloseFileHandle(fileHandleIndex) < 0);
+	CloseFileHandle(fileHandleIndex);
 
 	FileHandleContainer* pFileHandleContainer = &FileHandleContainersArray[fileHandleIndex];
 	FileDataContainer* pFileDataContainer = pFileHandleContainer->pFileDataContainer;
