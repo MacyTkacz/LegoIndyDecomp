@@ -29,13 +29,15 @@ struct FileHandleContainer {
 	FileDataContainer* pFileDataContainer;
 };
 
-struct FileBufferContainer {
-	char* textBuffer;
-	char* textBufferEnd;
-	char* filePointerPosition;
-	int bSomeBool;
-	int bIsInUse;
+class FileBufferContainer {
+public:
+	char* textBuffer; // 0x0
+	char* textBufferEnd; // 0x4
+	char* filePointerPosition; // 0x8
+	int bSomeBool; // 0xC
+	int bIsInUse; // 0x10
 };
+
 
 // ===================== CLASSES =====================
 
@@ -49,14 +51,17 @@ public:
 	int CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType);
 	bool CloseFileHandle(int fileHandleIndex);
 	void CloseResource(int resourceID);
+	int FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int someValue);
 	int Write(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite);
 	int Read(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToRead);
 	LARGE_INTEGER MoveFilePointer(int fileHandleIndex, LARGE_INTEGER distToMove, int moveMethod);
+
+	static constexpr int GetFileBufferContainersCount() { return 20; }
 private:
 	static inline FileIOManager* _instance = 0;
 
 	static inline int CriticalSectionIndex = -1;
-	int CriticalSectionLockCount;
+	static inline int CriticalSectionLockCount = 0;
 	CRITICAL_SECTION* CriticalSectionsArray[14];
 	HANDLE FileHandlesArray[32];
 	FileHandleContainer FileHandleContainersArray[32];

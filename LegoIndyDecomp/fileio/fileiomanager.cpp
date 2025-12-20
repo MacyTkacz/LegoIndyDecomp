@@ -154,3 +154,27 @@ LARGE_INTEGER FileIOManager::MoveFilePointer(int fileHandleIndex, LARGE_INTEGER 
 	return newFilePointer;
 
 }
+
+int FileIOManager::FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int bSomeBool) {
+
+	if (bufferSize <= 0 || bSomeBool > 1)
+		return 0;
+
+	FileBufferContainer* fileBufferContainersArray = Instance()->FileBufferContainersArray;
+	
+	int i;
+	for (i = 0; fileBufferContainersArray[i].bIsInUse; i++) {
+		if (i == GetFileBufferContainersCount()) return 0;
+	}
+
+	FileBufferContainer* pFileBufferContainer = &fileBufferContainersArray[i];
+
+	*&pFileBufferContainer->textBufferEnd = &buffer[bufferSize - 1];
+	*&pFileBufferContainer->bSomeBool = bSomeBool;
+	*&pFileBufferContainer->textBuffer = buffer;
+	*&pFileBufferContainer->filePointerPosition = buffer;
+	*&pFileBufferContainer->bIsInUse = 1;
+
+	return i + 1024;
+
+}
