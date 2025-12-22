@@ -17,7 +17,8 @@ int main() {
 	char* buff = (char*)GetOnHeap<char[4096]>();
 	HEAP_HOOK(buff);
 
-	fiom->Read(0, buff, 4096);
+	int resourceID = fiom->FormatAvailableFileBufferContainer(buff, 4096, 1);
+	fiom->CloseResource(resourceID);
 
 	fiom->CloseFileHandle(0);
 

@@ -36,7 +36,7 @@ public:
 	char* textBufferEnd; // 0x4
 	char* filePointerPosition; // 0x8
 	int bSomeBool; // 0xC
-	int bIsInUse; // 0x10
+	int bIsInUse = 0; // 0x10
 };
 
 // singleton class that manages file IO
@@ -64,8 +64,6 @@ private:
 	HANDLE FileHandlesArray[32];
 	FileHandleContainer FileHandleContainersArray[32];
 	FileBufferContainer FileBufferContainersArray[1024];
-	// closes FileBufferContainer or FilePointerInfo object
-	DWORD CloseResource_1024to4095(int resourceID);
 };
 
 #endif // LEGOINDY_FILEIO_H

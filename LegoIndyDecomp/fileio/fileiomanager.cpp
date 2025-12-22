@@ -94,7 +94,7 @@ void FileIOManager::CloseResource(int resourceID) {
 			return; // NOT YET IMPLEMENTED
 
 		// close FileBufferContainer
-		*(&FileBufferContainersArray[resourceID].bIsInUse) = 0;
+		*(&FileBufferContainersArray[resourceID-1024].bIsInUse) = 0;
 		return;
 	}
 
@@ -125,7 +125,8 @@ int FileIOManager::Read(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesT
 
 	HANDLE hFile = FileHandlesArray[fileHandleIndex];
 	DWORD numberOfBytesRead = 0;
-	ReadFile(hFile, lpBuffer, numberOfBytesToRead, &numberOfBytesRead, 0);
+	if (!ReadFile(hFile, lpBuffer, numberOfBytesToRead, &numberOfBytesRead, 0))
+		return 0;
 	return numberOfBytesRead;
 
 }
