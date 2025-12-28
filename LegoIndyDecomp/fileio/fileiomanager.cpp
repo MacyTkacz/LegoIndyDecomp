@@ -23,7 +23,7 @@ int FileIOManager::AdvanceCriticalSection() {
 
 int FileIOManager::CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType) {
 
-	int v5;
+	int fileHandleIndex;
 
 	DWORD dwCreationDisposition = 0;
 	DWORD dwDesiredAccess = 0;
@@ -52,24 +52,24 @@ ACCESS_TYPE_INITIALIZED:
 	if (CriticalSectionIndex - 1 <= 11)
 		EnterCriticalSection(CriticalSectionsArray[CriticalSectionIndex]);
 
-	int v4 = 0;
-	while (FileHandlesArray[v4] != (HANDLE)-1) {
-		if (++v4 >= 64) {
-			v5 = -1;
+	int currentFileHandleIndex = 0;
+	while (FileHandlesArray[currentFileHandleIndex] != (HANDLE)-1) {
+		if (++currentFileHandleIndex >= 64) {
+			fileHandleIndex = -1;
 			goto FILE_HANDLES_ARRAY_FULL;
 		}
 	}
-	v5 = v4;
+	fileHandleIndex = currentFileHandleIndex;
 
 FILE_HANDLES_ARRAY_FULL:
 
-	FileHandlesArray[v5] = CreateFileA(fpath, dwDesiredAccess, 1, 0, dwCreationDisposition, 0, 0);
+	FileHandlesArray[fileHandleIndex] = CreateFileA(fpath, dwDesiredAccess, 1, 0, dwCreationDisposition, 0, 0);
 	if (CriticalSectionIndex - 1 <= 11)
 		LeaveCriticalSection(CriticalSectionsArray[CriticalSectionIndex]);
-	if (FileHandlesArray[v5] == (HANDLE)-1)
+	if (FileHandlesArray[fileHandleIndex] == (HANDLE)-1)
 		return -1;
 
-	return v5;
+	return fileHandleIndex;
 
 }
 
