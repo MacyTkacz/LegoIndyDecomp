@@ -1,9 +1,10 @@
 #include "fileio.h"
 
-// temporary initialization of critical section
+// temporary fixes for uninitialized data
 FileIOManager::FileIOManager() {
 	CriticalSectionsArray[0] = new CRITICAL_SECTION();
 	memset(FileHandlesArray, (__int32)-1, 32);
+	FileDataContainersArray[0].pFileHandleContainer = &FileHandleContainersArray[0];
 }
 
 FileIOManager* FileIOManager::Instance() {
@@ -112,7 +113,7 @@ void FileIOManager::CloseResource(int resourceID) {
 
 }
 
-int FileIOManager::Write(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite) {
+int FileIOManager::RawWrite(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite) {
 
 	HANDLE hFile = FileHandlesArray[fileHandleIndex];
 	DWORD numberOfBytesWritten = 0;
@@ -121,13 +122,60 @@ int FileIOManager::Write(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytes
 
 }
 
-int FileIOManager::Read(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToRead) {
+int FileIOManager::RawRead(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToRead) {
 
 	HANDLE hFile = FileHandlesArray[fileHandleIndex];
 	DWORD numberOfBytesRead = 0;
 	if (!ReadFile(hFile, lpBuffer, numberOfBytesToRead, &numberOfBytesRead, 0))
 		return 0;
 	return numberOfBytesRead;
+
+}
+
+int FileIOManager::Read(FileHandleContainer* pFileHandleContainer) {
+	
+	int fileDataContainerIndex = 0;
+	int filesReadCount = FilesReadCounter;
+	int oldestWriteIndex = filesReadCount;
+	FilesReadCounter++;
+
+	// choose the FileDataContainer written to earliest
+	if (FileDataContainersArray[0].lastWriteIndex < filesReadCount) {
+		oldestWriteIndex = FileDataContainersArray[0].lastWriteIndex;
+	}
+	if (FileDataContainersArray[1].lastWriteIndex < oldestWriteIndex) {
+		oldestWriteIndex = FileDataContainersArray[1].lastWriteIndex;
+		fileDataContainerIndex = 1;
+	}
+	if (FileDataContainersArray[2].lastWriteIndex < oldestWriteIndex) {
+		oldestWriteIndex = FileDataContainersArray[2].lastWriteIndex;
+		fileDataContainerIndex = 2;
+	}
+	if (FileDataContainersArray[3].lastWriteIndex < oldestWriteIndex) {
+		fileDataContainerIndex = 3;
+	}
+
+	FileDataContainer* pFileDataContainer = &FileDataContainersArray[fileDataContainerIndex];
+	if (pFileDataContainer->pFileHandleContainer)
+		pFileDataContainer->pFileHandleContainer->pFileDataContainer = 0;
+	pFileDataContainer->lastWriteIndex = filesReadCount;
+	pFileDataContainer->pFileHandleContainer = pFileHandleContainer;
+	
+	int fileDataBufferSize = pFileHandleContainer->fileDataLength;
+	pFileHandleContainer->pFileDataContainer = pFileDataContainer;
+
+	LARGE_INTEGER distToMove;
+	distToMove.QuadPart = (LONGLONG)-fileDataBufferSize;
+
+	if (fileDataBufferSize) {
+		MoveFilePointer(pFileHandleContainer->fileHandleIndex, distToMove, FILE_CURRENT);
+		return RawRead(
+			pFileHandleContainer->fileHandleIndex,
+			pFileDataContainer->dataBuffer,
+			pFileHandleContainer->fileDataLength);
+	}
+
+	return fileDataBufferSize;
 
 }
 

@@ -10,7 +10,7 @@ enum FileAccessType { READ, CREATE, MODIFY };
 struct FileHandleContainer;
 struct FileDataContainer {
 	FileHandleContainer* pFileHandleContainer;
-	int int1;
+	int lastWriteIndex; // lower number = written to earlier
 	char dataBuffer[1024];
 };
 
@@ -45,13 +45,13 @@ public:
 	FileIOManager();
 	static FileIOManager* Instance();
 
+	// reads file data into an available FileDataContainer
+	int Read(FileHandleContainer* pFileHandleContainer);
 	int AdvanceCriticalSection();
 	int CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType);
 	bool CloseFileHandle(int fileHandleIndex);
 	void CloseResource(int resourceID);
 	int FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int someValue);
-	int Write(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite);
-	int Read(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToRead);
 	LARGE_INTEGER MoveFilePointer(int fileHandleIndex, LARGE_INTEGER distToMove, int moveMethod);
 
 	static constexpr int GetFileBufferContainersCount() { return 20; }
@@ -60,10 +60,17 @@ private:
 
 	static inline int CriticalSectionIndex = -1;
 	static inline int CriticalSectionLockCount = 0;
+	static inline int FilesReadCounter = 0; // increments when Read is called
+
 	CRITICAL_SECTION* CriticalSectionsArray[14];
 	HANDLE FileHandlesArray[32];
 	FileHandleContainer FileHandleContainersArray[32];
 	FileBufferContainer FileBufferContainersArray[1024];
+	FileDataContainer FileDataContainersArray[4];
+
+	// wrappers for Windows api
+	int RawWrite(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite);
+	int RawRead(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToRead);
 };
 
 #endif // LEGOINDY_FILEIO_H

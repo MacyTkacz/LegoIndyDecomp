@@ -11,18 +11,20 @@ int main() {
 	strcpy_s(fpath, 64, "C:/Users/thoma/OneDrive/Desktop/shaders.h");
 
 	FileIOManager* fiom = FileIOManager::Instance();
-	if (fiom->CreateFileHandle((LPCSTR)fpath,FileAccessType::READ) == -1)
-		std::cout << "failed to create file handle" << std::endl;
+	if (fiom->CreateFileHandle((LPCSTR)fpath, FileAccessType::READ) == -1) {
+		std::cerr << "failed to create file handle" << std::endl;
+		return 0;
+	}
 
-	char* buff = (char*)GetOnHeap<char[4096]>();
-	HEAP_HOOK(buff);
+	FileHandleContainer* pFileHandleContainer = (FileHandleContainer*)GetOnHeap<FileHandleContainer>();
+	HEAP_HOOK(pFileHandleContainer);
 
-	int resourceID = fiom->FormatAvailableFileBufferContainer(buff, 4096, 1);
-	fiom->CloseResource(resourceID);
+	pFileHandleContainer->fileHandleIndex = 0;
+	pFileHandleContainer->fileDataLength = 1024;
+
+	fiom->Read(pFileHandleContainer);
 
 	fiom->CloseFileHandle(0);
-
-	std::cout << buff << std::endl;
 
 	HEAP_FREE();
 
