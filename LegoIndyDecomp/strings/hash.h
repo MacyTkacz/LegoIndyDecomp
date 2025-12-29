@@ -1,6 +1,8 @@
 #ifndef LEGOINDY_HASH_H
 #define LEGOINDY_HASH_H
 
+#include <fileio/types.h>
+
 // ===================== STRUCTS =====================
 
 struct Hash {
@@ -10,7 +12,7 @@ struct Hash {
 };
 
 struct Hashes {
-	int someStatus; // 0x00
+	int isInUse; // 0x00
 	int numOfHashes; // 0x04
 	char padding1[8]; // 0x08
 	Hash* hashArray; // 0x10
@@ -19,8 +21,13 @@ struct Hashes {
 	int numOfStringHashIndexPairs; // 0x20
 	char padding3[4]; // 0x24
 	char* stringHashIndexPairsBuffer; // 0x28
-	char padding4[148]; // 0x2C
+	char padding4[4]; // 0x2C
+	FilePointerContainer filePointerContainersArray[8]; // 0x30
+	char padding5[2]; // 0xB0
+	__int16 fileAccessType; // 0xB2
+	char padding6[8]; // 0xB4
 	const char* fileName; // 0xBC
+	char padding7[24]; // 0xC0
 };
 
 // ===================== FUNCTIONS =====================

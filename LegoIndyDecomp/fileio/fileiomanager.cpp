@@ -168,7 +168,7 @@ int FileIOManager::Read(FileHandleContainer* pFileHandleContainer) {
 	distToMove.QuadPart = (LONGLONG)-fileDataBufferSize;
 
 	if (fileDataBufferSize) {
-		MoveFilePointer(pFileHandleContainer->fileHandleIndex, distToMove, FILE_CURRENT);
+		RawSetFilePointer(pFileHandleContainer->fileHandleIndex, distToMove, FILE_CURRENT);
 		return RawRead(
 			pFileHandleContainer->fileHandleIndex,
 			pFileDataContainer->dataBuffer,
@@ -179,7 +179,7 @@ int FileIOManager::Read(FileHandleContainer* pFileHandleContainer) {
 
 }
 
-LARGE_INTEGER FileIOManager::MoveFilePointer(int fileHandleIndex, LARGE_INTEGER distToMove, int moveMethod) {
+LARGE_INTEGER FileIOManager::RawSetFilePointer(int fileHandleIndex, LARGE_INTEGER distToMove, int moveMethod) {
 
 	LARGE_INTEGER newFilePointer;
 
@@ -193,6 +193,103 @@ LARGE_INTEGER FileIOManager::MoveFilePointer(int fileHandleIndex, LARGE_INTEGER 
 
 	newFilePointer.QuadPart = -1;
 	return newFilePointer;
+
+}
+
+int FileIOManager::SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod) {
+
+	int fileBufferContainerIndex;
+	FileBufferContainer* pFileBufferContainer;
+	__int64 initialPosition;
+	LARGE_INTEGER newPosition;
+	FilePointerInfo* pFilePointerInfo;
+	FilePointerContainer* pFilePointerContainer;
+
+	if (resourceID >= MaximumValidResourceID)
+		return 0;
+
+	if (resourceID < FileBufferContainersBase)
+		goto PROCESS_FILEHANDLECONTAINER;
+
+	if (resourceID < FilePointerInfosBase)
+		goto PROCESS_FILEBUFFERCONTAINER; 
+
+PROCESS_FILEPOINTERINFO:
+
+	pFilePointerInfo = &FilePointerInfoArray[resourceID - FilePointerInfosBase];
+	pFilePointerContainer = &pFilePointerInfo->pHashesStruct->filePointerContainersArray[pFilePointerInfo->filePointerContainerIndex];
+
+	switch (moveMethod) {
+		case FILE_CURRENT: {
+			initialPosition = pFilePointerInfo->filePointerPosition.QuadPart;
+			newPosition.QuadPart = distToMove.QuadPart + initialPosition;
+			break;
+		}
+		case FILE_END: {
+			newPosition.QuadPart = pFilePointerInfo->fileStartPosition.QuadPart + pFilePointerInfo->fileDataSize - distToMove.QuadPart;
+			break;
+		}
+		default:
+		case FILE_BEGIN: {
+			initialPosition = pFilePointerInfo->fileStartPosition.QuadPart;
+			newPosition.QuadPart = distToMove.QuadPart + initialPosition;
+		}
+	}
+
+	LARGE_INTEGER filePointerPosition;
+	filePointerPosition.LowPart = SetFilePointer(
+		pFilePointerContainer->fileHandleID,
+		newPosition,
+		FILE_BEGIN
+	);
+	pFilePointerInfo->filePointerPosition.QuadPart = filePointerPosition.QuadPart;
+	pFilePointerContainer->filePointerPosition.LowPart = filePointerPosition.LowPart;
+	pFilePointerContainer->filePointerPosition.HighPart = pFilePointerInfo->filePointerPosition.HighPart;
+	return pFilePointerInfo->filePointerPosition.QuadPart;
+
+PROCESS_FILEBUFFERCONTAINER:
+
+	fileBufferContainerIndex = resourceID - 1024;
+	pFileBufferContainer = &FileBufferContainersArray[fileBufferContainerIndex];
+
+	switch(moveMethod) {
+		case FILE_CURRENT: {
+			pFileBufferContainer->filePointerPosition += distToMove.QuadPart;
+			return pFileBufferContainer->filePointerPosition - pFileBufferContainer->textBuffer;
+		}
+		case FILE_END: {
+			char* newFilePointer = &pFileBufferContainer->textBufferEnd[-distToMove.QuadPart];
+			pFileBufferContainer->filePointerPosition = newFilePointer;
+			return newFilePointer - pFileBufferContainer->textBuffer;
+		}
+		case FILE_BEGIN:
+		default: {
+			pFileBufferContainer->filePointerPosition = &pFileBufferContainer->textBuffer[distToMove.QuadPart];
+			return distToMove.LowPart;
+		}
+	}
+
+PROCESS_FILEHANDLECONTAINER:
+
+	FileHandleContainer* pFileHandleContainer = &FileHandleContainersArray[resourceID - 1];
+	if (!pFileHandleContainer->bCanFileBeReadNonsequentially)
+		return RawSetFilePointer(resourceID - 1, distToMove, moveMethod).LowPart;
+
+	switch (moveMethod) {
+		case FILE_CURRENT: {
+			pFileHandleContainer->filePointerPosition.QuadPart += distToMove.QuadPart;
+			return pFileHandleContainer->filePointerPosition.LowPart;
+		}
+		case FILE_END: {
+			pFileHandleContainer->filePointerPosition.QuadPart = pFileHandleContainer->fileEndPosition.QuadPart - distToMove.QuadPart;
+			return pFileHandleContainer->filePointerPosition.LowPart;
+		}
+		case FILE_BEGIN:
+		default: {
+			pFileHandleContainer->filePointerPosition.QuadPart = distToMove.QuadPart;
+			return pFileHandleContainer->filePointerPosition.LowPart;
+		}
+	}
 
 }
 
