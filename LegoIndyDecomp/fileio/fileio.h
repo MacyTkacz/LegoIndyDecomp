@@ -66,7 +66,12 @@ public:
 	bool CloseFileHandle(int fileHandleIndex);
 	void CloseResource(int resourceID);
 	int FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int someValue);
+
 	int SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod);
+	int SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, DWORD moveMethod);
+	int SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, DWORD moveMethod);
+	int SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, DWORD moveMethod);
+
 	static constexpr int GetFileBufferContainersCount() { return 20; }
 
 	// resource ID reference values
@@ -93,6 +98,8 @@ private:
 	int RawWrite(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite);
 	int RawRead(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToRead);
 	LARGE_INTEGER RawSetFilePointer(int fileHandleIndex, LARGE_INTEGER distToMove, int moveMethod);
+	void RawEnterCriticalSection(int criticalSectionIndex);
+	void RawLeaveCriticalSection(int criticalSectionIndex);
 };
 
 #endif // LEGOINDY_FILEIO_H

@@ -85,17 +85,17 @@ bool FileIOManager::CloseFileHandle(int fileHandleIndex) {
 void FileIOManager::CloseResource(int resourceID) {
 
 	// outside of valid ID range
-	if (resourceID >= 4096)
+	if (resourceID >= MaximumValidResourceID)
 		return;
 
-	if (resourceID >= 1024) {
+	if (resourceID >= FileBufferContainersBase) {
 
 		// close FilePointerInfo
-		if (resourceID >= 2048)
+		if (resourceID >= FilePointerInfosBase)
 			return; // NOT YET IMPLEMENTED
 
 		// close FileBufferContainer
-		*(&FileBufferContainersArray[resourceID-1024].bIsInUse) = 0;
+		*(&FileBufferContainersArray[resourceID-FileBufferContainersBase].bIsInUse) = 0;
 		return;
 	}
 
@@ -196,28 +196,12 @@ LARGE_INTEGER FileIOManager::RawSetFilePointer(int fileHandleIndex, LARGE_INTEGE
 
 }
 
-int FileIOManager::SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod) {
+int FileIOManager::SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, DWORD moveMethod) {
 
-	int fileBufferContainerIndex;
-	FileBufferContainer* pFileBufferContainer;
 	__int64 initialPosition;
 	LARGE_INTEGER newPosition;
-	FilePointerInfo* pFilePointerInfo;
-	FilePointerContainer* pFilePointerContainer;
 
-	if (resourceID >= MaximumValidResourceID)
-		return 0;
-
-	if (resourceID < FileBufferContainersBase)
-		goto PROCESS_FILEHANDLECONTAINER;
-
-	if (resourceID < FilePointerInfosBase)
-		goto PROCESS_FILEBUFFERCONTAINER; 
-
-PROCESS_FILEPOINTERINFO:
-
-	pFilePointerInfo = &FilePointerInfoArray[resourceID - FilePointerInfosBase];
-	pFilePointerContainer = &pFilePointerInfo->pHashesStruct->filePointerContainersArray[pFilePointerInfo->filePointerContainerIndex];
+	FilePointerContainer* pFilePointerContainer = &pFilePointerInfo->pHashesStruct->filePointerContainersArray[pFilePointerInfo->filePointerContainerIndex];
 
 	switch (moveMethod) {
 		case FILE_CURRENT: {
@@ -247,10 +231,9 @@ PROCESS_FILEPOINTERINFO:
 	pFilePointerContainer->filePointerPosition.HighPart = pFilePointerInfo->filePointerPosition.HighPart;
 	return pFilePointerInfo->filePointerPosition.QuadPart;
 
-PROCESS_FILEBUFFERCONTAINER:
+}
 
-	fileBufferContainerIndex = resourceID - 1024;
-	pFileBufferContainer = &FileBufferContainersArray[fileBufferContainerIndex];
+int FileIOManager::SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, DWORD moveMethod) {
 
 	switch(moveMethod) {
 		case FILE_CURRENT: {
@@ -269,11 +252,12 @@ PROCESS_FILEBUFFERCONTAINER:
 		}
 	}
 
-PROCESS_FILEHANDLECONTAINER:
+}
 
-	FileHandleContainer* pFileHandleContainer = &FileHandleContainersArray[resourceID - 1];
+int FileIOManager::SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, DWORD moveMethod) {
+
 	if (!pFileHandleContainer->bCanFileBeReadNonsequentially)
-		return RawSetFilePointer(resourceID - 1, distToMove, moveMethod).LowPart;
+		return RawSetFilePointer(pFileHandleContainer->fileHandleIndex, distToMove, moveMethod).LowPart;
 
 	switch (moveMethod) {
 		case FILE_CURRENT: {
@@ -290,6 +274,21 @@ PROCESS_FILEHANDLECONTAINER:
 			return pFileHandleContainer->filePointerPosition.LowPart;
 		}
 	}
+
+}
+
+int FileIOManager::SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod) {
+
+	if (resourceID >= MaximumValidResourceID)
+		return 0;
+
+	if (resourceID < FileBufferContainersBase)
+		return SetFilePointer(&FileHandleContainersArray[resourceID - FileHandleContainersBase], distToMove, moveMethod);
+
+	if (resourceID < FilePointerInfosBase)
+		return SetFilePointer(&FileBufferContainersArray[resourceID - FileBufferContainersBase], distToMove, moveMethod);
+
+	SetFilePointer(&FilePointerInfoArray[resourceID - FilePointerInfosBase], distToMove, moveMethod);
 
 }
 
@@ -313,6 +312,16 @@ int FileIOManager::FormatAvailableFileBufferContainer(char* buffer, int bufferSi
 	*&pFileBufferContainer->filePointerPosition = buffer;
 	*&pFileBufferContainer->bIsInUse = 1;
 
-	return i + 1024;
+	return i + FileBufferContainersBase;
 
+}
+
+void FileIOManager::RawEnterCriticalSection(int criticalSectionIndex) {
+	if (CriticalSectionIndex - 1 <= 11)
+		EnterCriticalSection(CriticalSectionsArray[CriticalSectionIndex]);
+}
+
+void FileIOManager::RawLeaveCriticalSection(int criticalSectionIndex) {
+	if (CriticalSectionIndex - 1 <= 11)
+		LeaveCriticalSection(CriticalSectionsArray[CriticalSectionIndex]);
 }
