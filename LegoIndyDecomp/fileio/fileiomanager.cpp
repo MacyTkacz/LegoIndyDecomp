@@ -306,11 +306,11 @@ int FileIOManager::FormatAvailableFileBufferContainer(char* buffer, int bufferSi
 
 	FileBufferContainer* pFileBufferContainer = &fileBufferContainersArray[i];
 
-	*&pFileBufferContainer->textBufferEnd = &buffer[bufferSize - 1];
-	*&pFileBufferContainer->bSomeBool = bSomeBool;
-	*&pFileBufferContainer->textBuffer = buffer;
-	*&pFileBufferContainer->filePointerPosition = buffer;
-	*&pFileBufferContainer->bIsInUse = 1;
+	pFileBufferContainer->textBufferEnd = &buffer[bufferSize - 1];
+	pFileBufferContainer->bSomeBool = bSomeBool;
+	pFileBufferContainer->textBuffer = buffer;
+	pFileBufferContainer->filePointerPosition = buffer;
+	pFileBufferContainer->bIsInUse = 1;
 
 	return i + FileBufferContainersBase;
 
