@@ -1,4 +1,5 @@
 #include "fileio.h"
+#include "strings/std.h"
 
 // temporary fixes for uninitialized data
 FileIOManager::FileIOManager() {
@@ -324,4 +325,21 @@ void FileIOManager::RawEnterCriticalSection(int criticalSectionIndex) {
 void FileIOManager::RawLeaveCriticalSection(int criticalSectionIndex) {
 	if (CriticalSectionIndex - 1 <= 11)
 		LeaveCriticalSection(CriticalSectionsArray[CriticalSectionIndex]);
+}
+
+FilePathContainer* FileIOManager::GetFilePathContainerFromPath(char* fpath) {
+
+	int currentCharIndex = 0;
+	while (fpath[currentCharIndex] != ':') {
+		if (++currentCharIndex >= 8)
+			return 0;
+	}
+
+	for (FilePathContainer* pFilePathContainer : FilePathContainersArray) {
+		if (!_strncmp(fpath, pFilePathContainer->absolutePath, pFilePathContainer->pathLength ) )
+			return pFilePathContainer;
+	}
+
+	return 0;
+
 }

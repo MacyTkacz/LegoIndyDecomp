@@ -42,6 +42,28 @@ struct FilePointerInfo {
 	DWORD dw4;
 };
 
+struct PathTypeInfo {
+	int status1;
+	char pad1[12];
+	char separator;
+};
+
+struct FilePathContainer {
+	PathTypeInfo pathTypeInfo;
+	char pad1[35];
+	char absolutePath[16];
+	int pathLength;
+	char pad2[4];
+	char drivePrefix[16];
+	char pad3[16];
+	char someStr[32];
+	char pad4[32];
+	char relativePath[16];
+	char pad5[368];
+	int (*pathJoiningFunction)(FilePathContainer *, char *fpath_out, char *fpath_in, int size);
+    int (*func2)(FilePathContainer *);
+};
+
 // ===================== CLASSES =====================
 
 class FileBufferContainer {
@@ -66,6 +88,7 @@ public:
 	bool CloseFileHandle(int fileHandleIndex);
 	void CloseResource(int resourceID);
 	int FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int someValue);
+	FilePathContainer* GetFilePathContainerFromPath(char* fpath);
 
 	int SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod);
 	int SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, DWORD moveMethod);
@@ -75,10 +98,12 @@ public:
 	static constexpr int GetFileBufferContainersCount() { return 20; }
 
 	// resource ID reference values
-	const static int FileHandleContainersBase = 0;
-	const static int FileBufferContainersBase = 1024;
-	const static int FilePointerInfosBase = 2048;
-	const static int MaximumValidResourceID = 4096;
+	static constexpr int FileHandleContainersBase = 0;
+	static constexpr int FileBufferContainersBase = 1024;
+	static constexpr int FilePointerInfosBase = 2048;
+	static constexpr int MaximumValidResourceID = 4096;
+
+	static constexpr int MaxFilePathContainersCount = 100;
 
 private:
 	static inline FileIOManager* _instance = 0;
@@ -86,6 +111,7 @@ private:
 	static inline int CriticalSectionIndex = -1;
 	static inline int CriticalSectionLockCount = 0;
 	static inline int FilesReadCounter = 0; // increments when Read is called
+	static inline int FilePathContainersCount = 0;
 
 	CRITICAL_SECTION* CriticalSectionsArray[14];
 	HANDLE FileHandlesArray[32];
@@ -93,6 +119,7 @@ private:
 	FileBufferContainer FileBufferContainersArray[1024];
 	FileDataContainer FileDataContainersArray[4];
 	FilePointerInfo FilePointerInfoArray[1024];
+	FilePathContainer FilePathContainersArray[MaxFilePathContainersCount];
 
 	// wrappers for Windows api
 	int RawWrite(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite);
