@@ -343,3 +343,20 @@ FilePathContainer* FileIOManager::GetFilePathContainerFromPath(char* fpath) {
 	return 0;
 
 }
+
+// this function can either return 0 or error out
+// my best guess is that this is an assertion for a proper linkage between a FilePointerInfo and a FilePointerContainer?
+// note: in the codebase, this is only ever run after a check for a FileAccessType of 3
+int FileIOManager::AssertValidStructLinkage(int resourceID) {
+
+	int i = resourceID;
+	while (i < FileBufferContainersBase) {
+		FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[i - FilePointerInfosBase];
+		int filePointerContainerIndex = pFilePointerInfo->filePointerContainerIndex;
+		i = pFilePointerInfo->pHashesStruct->filePointerContainersArray[filePointerContainerIndex].fileHandleID;
+		if (i < FilePointerInfosBase)
+			break;
+	}
+	return 0;
+
+}

@@ -89,6 +89,7 @@ public:
 	void CloseResource(int resourceID);
 	int FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int someValue);
 	FilePathContainer* GetFilePathContainerFromPath(char* fpath);
+	int AssertValidStructLinkage(int resourceID);
 
 	int SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod);
 	int SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, DWORD moveMethod);
