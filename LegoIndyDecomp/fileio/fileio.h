@@ -37,7 +37,7 @@ struct FilePointerInfo {
 	DWORD fileDataSize;
 	DWORD fileDataSizeWhen0x28isNonzero;
 	int filePointerContainerIndex;
-	DWORD fileOffset2;
+	DWORD bIsInUse;
 	DWORD dw3;
 	DWORD dw4;
 };
@@ -89,7 +89,11 @@ public:
 	void CloseResource(int resourceID);
 	int FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int someValue);
 	FilePathContainer* GetFilePathContainerFromPath(char* fpath);
+	int GetAvailableFilePointerInfoIndex();
+	int LinkAvailableFilePointerContainerWithHashesStruct(Hashes* pHashesStruct, int hashesStructIndex);
 	int AssertValidStructLinkage(int resourceID);
+	int SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* pHashesStruct, int a4);
+	unsigned __int64 CalculateStatusDependentValue(Hashes* pHashesStruct, int base);
 
 	int SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod);
 	int SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, DWORD moveMethod);
@@ -105,6 +109,7 @@ public:
 	static constexpr int MaximumValidResourceID = 4096;
 
 	static constexpr int MaxFilePathContainersCount = 100;
+	static constexpr int MaxFilePointerInfoCount = 20;
 
 private:
 	static inline FileIOManager* _instance = 0;
@@ -117,10 +122,14 @@ private:
 	CRITICAL_SECTION* CriticalSectionsArray[14];
 	HANDLE FileHandlesArray[32];
 	FileHandleContainer FileHandleContainersArray[32];
-	FileBufferContainer FileBufferContainersArray[1024];
+	FileBufferContainer FileBufferContainersArray[20];
 	FileDataContainer FileDataContainersArray[4];
-	FilePointerInfo FilePointerInfoArray[1024];
+	FilePointerInfo FilePointerInfoArray[MaxFilePointerInfoCount];
 	FilePathContainer FilePathContainersArray[MaxFilePathContainersCount];
+
+	FilePathContainer DefaultFilePathContainer{};
+
+	LARGE_INTEGER SomeLargeInteger;
 
 	// wrappers for Windows api
 	int RawWrite(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite);

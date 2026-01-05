@@ -12,7 +12,7 @@ struct Hash {
 };
 
 struct Hashes {
-	int isInUse; // 0x00
+	int status; // 0x00
 	int numOfHashes; // 0x04
 	char padding1[8]; // 0x08
 	Hash* hashArray; // 0x10

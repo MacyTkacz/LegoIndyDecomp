@@ -335,9 +335,9 @@ FilePathContainer* FileIOManager::GetFilePathContainerFromPath(char* fpath) {
 			return 0;
 	}
 
-	for (FilePathContainer* pFilePathContainer : FilePathContainersArray) {
-		if (!_strncmp(fpath, pFilePathContainer->absolutePath, pFilePathContainer->pathLength ) )
-			return pFilePathContainer;
+	for (FilePathContainer filePathContainer : FilePathContainersArray) {
+		if (!_strncmp(fpath, filePathContainer.absolutePath, filePathContainer.pathLength ) )
+			return &filePathContainer;
 	}
 
 	return 0;
@@ -358,5 +358,101 @@ int FileIOManager::AssertValidStructLinkage(int resourceID) {
 			break;
 	}
 	return 0;
+
+}
+
+// TODO: find what EDX is doing and finish
+int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* pHashesStruct, int a4) {
+
+	int resourceID;
+
+	FilePathContainer* pFilePathContainer = GetFilePathContainerFromPath(fpath);
+	if (!pFilePathContainer ) {
+
+		if (pHashesStruct && fileAccessType != CREATE && fileAccessType != MODIFY)
+			return 0; // TODO: finish another function and complete
+
+		pFilePathContainer = &DefaultFilePathContainer;
+
+	}
+
+	char joinedFpath[256];
+	pFilePathContainer->pathJoiningFunction(pFilePathContainer, joinedFpath, fpath, 256);
+
+	if (pFilePathContainer->pathTypeInfo.status1 == 1)
+		return MaximumValidResourceID;
+
+	int fileHandleIndex = CreateFileHandle(joinedFpath, fileAccessType);
+	if (fileHandleIndex < 0)
+		return 0;
+
+	FileHandleContainer* pFileHandleContainer = &FileHandleContainersArray[fileHandleIndex];
+	memset(pFileHandleContainer, 0, sizeof(FileHandleContainer));
+	pFileHandleContainer->fileHandleIndex = fileHandleIndex;
+	pFileHandleContainer->fileAccessType = fileAccessType;
+
+	if (fileAccessType == CREATE) {
+		pFileHandleContainer->fileEndPosition.QuadPart = 0;
+	}
+	else {
+		if (fileHandleIndex > 16)
+			goto LABEL_25;
+
+		int filePointerEnd;
+		//while (true) {
+		//	filePointerEnd = SetFilePointer(fileHandleIndex + 1, (LARGE_INTEGER)0, FILE_END);
+
+		//}
+	}
+LABEL_25:
+
+	return 0;
+}
+
+int FileIOManager::GetAvailableFilePointerInfoIndex() {
+
+	int availableIndex = -1;
+
+	RawEnterCriticalSection(CriticalSectionIndex);
+	for (int i = 0; i < MaxFilePointerInfoCount; i++) {
+		FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[i];
+		if (!pFilePointerInfo->bIsInUse) {
+			availableIndex = i;
+			break;
+		}
+	}
+	if (availableIndex != -1)
+		FilePointerInfoArray[availableIndex].bIsInUse = 1;
+	RawLeaveCriticalSection(CriticalSectionIndex);
+	return availableIndex;
+
+}
+
+int FileIOManager::LinkAvailableFilePointerContainerWithHashesStruct(Hashes* pHashesStruct, int hashesStructIndex) {
+
+	FilePointerContainer* filePointerContainersArray = pHashesStruct->filePointerContainersArray;
+
+	RawEnterCriticalSection(CriticalSectionIndex);
+
+	int availableFilePointerContainerIndex = 0;
+	for (int i = 0; filePointerContainersArray[i].fileHandleIndex != -1; i++) {
+		if (++availableFilePointerContainerIndex >= 8) {
+			availableFilePointerContainerIndex = -1;
+			goto EXIT;
+		}
+	}
+	filePointerContainersArray[availableFilePointerContainerIndex].fileHandleIndex = hashesStructIndex;
+
+EXIT:
+	RawLeaveCriticalSection(CriticalSectionIndex);
+	return availableFilePointerContainerIndex;
+
+}
+
+// if pHashesStruct->status <= -2 return SomeLargeInteger+(base*256), else return SomeLargeInteger+base
+unsigned __int64 FileIOManager::CalculateStatusDependentValue(Hashes* pHashesStruct, int base) {
+
+	bool flag = pHashesStruct->status <= -2;
+	return SomeLargeInteger.QuadPart + ((__int64)base << (flag ? 8 : 0));
 
 }
