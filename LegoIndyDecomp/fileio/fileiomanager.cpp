@@ -1,5 +1,6 @@
 #include "fileio.h"
 #include "strings/std.h"
+#include <utils.h>
 
 // temporary fixes for uninitialized data
 FileIOManager::FileIOManager() {
@@ -237,12 +238,12 @@ LARGE_INTEGER FileIOManager::SetFilePointer(FileBufferContainer* pFileBufferCont
 	switch(moveMethod) {
 		case FILE_CURRENT: {
 			pFileBufferContainer->filePointerPosition += distToMove.QuadPart;
-			return (LARGE_INTEGER)(pFileBufferContainer->filePointerPosition - pFileBufferContainer->textBuffer);
+			return IntToLargeInteger(pFileBufferContainer->filePointerPosition - pFileBufferContainer->textBuffer);
 		}
 		case FILE_END: {
 			char* newFilePointer = &pFileBufferContainer->textBufferEnd[-distToMove.QuadPart];
 			pFileBufferContainer->filePointerPosition = newFilePointer;
-			return (LARGE_INTEGER)(newFilePointer - pFileBufferContainer->textBuffer);
+			return IntToLargeInteger(newFilePointer - pFileBufferContainer->textBuffer);
 		}
 		case FILE_BEGIN:
 		default: {
@@ -279,7 +280,7 @@ LARGE_INTEGER FileIOManager::SetFilePointer(FileHandleContainer* pFileHandleCont
 LARGE_INTEGER FileIOManager::SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod) {
 
 	if (resourceID >= MaximumValidResourceID)
-		return (LARGE_INTEGER)0;
+		return IntToLargeInteger(0);
 
 	if (resourceID < FileBufferContainersBase)
 		return SetFilePointer(&FileHandleContainersArray[resourceID - FileHandleContainersBase], distToMove, moveMethod);
@@ -396,7 +397,7 @@ int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* 
 		if (fileHandleIndex > 16)
 			goto LABEL_25;
 		while (true) {
-			newFilePointerPosition = SetFilePointer(fileHandleIndex + 1, (LARGE_INTEGER)0, FILE_END);
+			newFilePointerPosition = SetFilePointer(fileHandleIndex + 1, IntToLargeInteger(0), FILE_END);
 			if (newFilePointerPosition.HighPart >= 0)
 				break;
 		}
@@ -404,7 +405,7 @@ int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* 
 		if (fileAccessType == ( FileAccessType::MODIFY | FileAccessType::CREATE ))
 			while (AssertValidStructLinkage(fileHandleIndex+1));
 		while (true) {
-			newFilePointerPosition = SetFilePointer(fileHandleIndex + 1, (LARGE_INTEGER)0, FILE_BEGIN);
+			newFilePointerPosition = SetFilePointer(fileHandleIndex + 1, IntToLargeInteger(0), FILE_BEGIN);
 			if (newFilePointerPosition.HighPart >= 0)
 				break;
 		}
