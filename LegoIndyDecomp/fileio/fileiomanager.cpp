@@ -197,7 +197,7 @@ LARGE_INTEGER FileIOManager::RawSetFilePointer(int fileHandleIndex, LARGE_INTEGE
 
 }
 
-int FileIOManager::SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, DWORD moveMethod) {
+LARGE_INTEGER FileIOManager::SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, DWORD moveMethod) {
 
 	__int64 initialPosition;
 	LARGE_INTEGER newPosition;
@@ -221,67 +221,65 @@ int FileIOManager::SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEG
 		}
 	}
 
-	LARGE_INTEGER filePointerPosition;
-	filePointerPosition.LowPart = SetFilePointer(
+	LARGE_INTEGER filePointerPosition = SetFilePointer(
 		pFilePointerContainer->fileHandleID,
 		newPosition,
 		FILE_BEGIN
 	);
 	pFilePointerInfo->filePointerPosition.QuadPart = filePointerPosition.QuadPart;
-	pFilePointerContainer->filePointerPosition.LowPart = filePointerPosition.LowPart;
-	pFilePointerContainer->filePointerPosition.HighPart = pFilePointerInfo->filePointerPosition.HighPart;
-	return pFilePointerInfo->filePointerPosition.QuadPart;
+	pFilePointerContainer->filePointerPosition.QuadPart = filePointerPosition.QuadPart;
+	return filePointerPosition;
 
 }
 
-int FileIOManager::SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, DWORD moveMethod) {
+LARGE_INTEGER FileIOManager::SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, DWORD moveMethod) {
 
 	switch(moveMethod) {
 		case FILE_CURRENT: {
 			pFileBufferContainer->filePointerPosition += distToMove.QuadPart;
-			return pFileBufferContainer->filePointerPosition - pFileBufferContainer->textBuffer;
+			return (LARGE_INTEGER)(pFileBufferContainer->filePointerPosition - pFileBufferContainer->textBuffer);
 		}
 		case FILE_END: {
 			char* newFilePointer = &pFileBufferContainer->textBufferEnd[-distToMove.QuadPart];
 			pFileBufferContainer->filePointerPosition = newFilePointer;
-			return newFilePointer - pFileBufferContainer->textBuffer;
+			return (LARGE_INTEGER)(newFilePointer - pFileBufferContainer->textBuffer);
 		}
 		case FILE_BEGIN:
 		default: {
 			pFileBufferContainer->filePointerPosition = &pFileBufferContainer->textBuffer[distToMove.QuadPart];
-			return distToMove.LowPart;
+			return distToMove;
 		}
 	}
 
 }
 
-int FileIOManager::SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, DWORD moveMethod) {
+LARGE_INTEGER FileIOManager::SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, DWORD moveMethod) {
 
 	if (!pFileHandleContainer->bCanFileBeReadNonsequentially)
-		return RawSetFilePointer(pFileHandleContainer->fileHandleIndex, distToMove, moveMethod).LowPart;
+		return RawSetFilePointer(pFileHandleContainer->fileHandleIndex, distToMove, moveMethod);
 
 	switch (moveMethod) {
 		case FILE_CURRENT: {
 			pFileHandleContainer->filePointerPosition.QuadPart += distToMove.QuadPart;
-			return pFileHandleContainer->filePointerPosition.LowPart;
+			return pFileHandleContainer->filePointerPosition;
 		}
 		case FILE_END: {
 			pFileHandleContainer->filePointerPosition.QuadPart = pFileHandleContainer->fileEndPosition.QuadPart - distToMove.QuadPart;
-			return pFileHandleContainer->filePointerPosition.LowPart;
+			return pFileHandleContainer->filePointerPosition;
 		}
 		case FILE_BEGIN:
 		default: {
 			pFileHandleContainer->filePointerPosition.QuadPart = distToMove.QuadPart;
-			return pFileHandleContainer->filePointerPosition.LowPart;
+			return pFileHandleContainer->filePointerPosition;
 		}
 	}
 
 }
 
-int FileIOManager::SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod) {
+LARGE_INTEGER FileIOManager::SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod) {
 
 	if (resourceID >= MaximumValidResourceID)
-		return 0;
+		return (LARGE_INTEGER)0;
 
 	if (resourceID < FileBufferContainersBase)
 		return SetFilePointer(&FileHandleContainersArray[resourceID - FileHandleContainersBase], distToMove, moveMethod);
@@ -361,10 +359,10 @@ int FileIOManager::AssertValidStructLinkage(int resourceID) {
 
 }
 
-// TODO: find what EDX is doing and finish
 int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* pHashesStruct, int a4) {
 
 	int resourceID;
+	LARGE_INTEGER newFilePointerPosition;
 
 	FilePathContainer* pFilePathContainer = GetFilePathContainerFromPath(fpath);
 	if (!pFilePathContainer ) {
@@ -397,16 +395,30 @@ int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* 
 	else {
 		if (fileHandleIndex > 16)
 			goto LABEL_25;
-
-		int filePointerEnd;
-		//while (true) {
-		//	filePointerEnd = SetFilePointer(fileHandleIndex + 1, (LARGE_INTEGER)0, FILE_END);
-
-		//}
-	}
+		while (true) {
+			newFilePointerPosition = SetFilePointer(fileHandleIndex + 1, (LARGE_INTEGER)0, FILE_END);
+			if (newFilePointerPosition.HighPart >= 0)
+				break;
+		}
+		FileHandleContainersArray[fileHandleIndex].fileEndPosition = newFilePointerPosition;
+		if (fileAccessType == ( FileAccessType::MODIFY | FileAccessType::CREATE ))
+			while (AssertValidStructLinkage(fileHandleIndex+1));
+		while (true) {
+			newFilePointerPosition = SetFilePointer(fileHandleIndex + 1, (LARGE_INTEGER)0, FILE_BEGIN);
+			if (newFilePointerPosition.HighPart >= 0)
+				break;
+		}
+		if (fileAccessType == ( FileAccessType::MODIFY | FileAccessType::CREATE ))
+			while (AssertValidStructLinkage(fileHandleIndex+1));
+		else {
 LABEL_25:
+			if (fileAccessType == FileAccessType::READ)
+				FileHandleContainersArray[fileHandleIndex].bCanFileBeReadNonsequentially = bCanFileBeReadNonsequentially;
+		}
+	}
+	FileHandleContainersArray[fileHandleIndex].pSomething = 0;
+	return fileHandleIndex + 1;
 
-	return 0;
 }
 
 int FileIOManager::GetAvailableFilePointerInfoIndex() {
@@ -454,5 +466,20 @@ unsigned __int64 FileIOManager::CalculateStatusDependentValue(Hashes* pHashesStr
 
 	bool flag = pHashesStruct->status <= -2;
 	return SomeLargeInteger.QuadPart + ((__int64)base << (flag ? 8 : 0));
+
+}
+
+int FileIOManager::InitializeFilePointerContainerFileHandleID(Hashes* pHashesStruct, int filePointerContainerIndex) {
+
+	// return FilePointerContainer's fileHandleID, if any
+	FilePointerContainer* pFilePointerContainer = &pHashesStruct->filePointerContainersArray[filePointerContainerIndex];
+	if (pFilePointerContainer->fileHandleID)
+		return pFilePointerContainer->fileHandleID;
+
+	// give FilePointerContainer a new fileHandleID and reset its FilePointerPosition to 0
+	int fileHandleID = SIXB44F0(const_cast<char*>(pHashesStruct->fileName), (FileAccessType)pHashesStruct->fileAccessType, 0, 0);
+	pFilePointerContainer->fileHandleID = fileHandleID;
+	pFilePointerContainer->filePointerPosition.QuadPart = 0;
+	return fileHandleID;
 
 }

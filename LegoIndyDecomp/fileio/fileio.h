@@ -6,7 +6,7 @@
 
 // ===================== STRUCTS =====================
 
-enum FileAccessType { READ, CREATE, MODIFY };
+enum FileAccessType { READ, CREATE, MODIFY, OTHER };
 
 struct FileHandleContainer;
 struct FileDataContainer {
@@ -94,11 +94,12 @@ public:
 	int AssertValidStructLinkage(int resourceID);
 	int SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* pHashesStruct, int a4);
 	unsigned __int64 CalculateStatusDependentValue(Hashes* pHashesStruct, int base);
+	int InitializeFilePointerContainerFileHandleID(Hashes* pHashesStruct, int filePointerContainerIndex);
 
-	int SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod);
-	int SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, DWORD moveMethod);
-	int SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, DWORD moveMethod);
-	int SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, DWORD moveMethod);
+	LARGE_INTEGER SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod);
+	LARGE_INTEGER SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, DWORD moveMethod);
+	LARGE_INTEGER SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, DWORD moveMethod);
+	LARGE_INTEGER SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, DWORD moveMethod);
 
 	static constexpr int GetFileBufferContainersCount() { return 20; }
 
@@ -118,6 +119,7 @@ private:
 	static inline int CriticalSectionLockCount = 0;
 	static inline int FilesReadCounter = 0; // increments when Read is called
 	static inline int FilePathContainersCount = 0;
+	static inline int bCanFileBeReadNonsequentially = 0; // honestly a shot in the dark, don't really know what this is
 
 	CRITICAL_SECTION* CriticalSectionsArray[14];
 	HANDLE FileHandlesArray[32];
