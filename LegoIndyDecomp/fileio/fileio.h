@@ -38,7 +38,7 @@ struct FilePointerInfo {
 	DWORD fileDataSizeWhen0x28isNonzero;
 	int filePointerContainerIndex;
 	DWORD bIsInUse;
-	DWORD dw3;
+	DWORD bIsRelative;
 	DWORD dw4;
 };
 
@@ -95,6 +95,7 @@ public:
 	int SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* pHashesStruct, int a4);
 	unsigned __int64 CalculateStatusDependentValue(Hashes* pHashesStruct, int base);
 	int InitializeFilePointerContainerFileHandleID(Hashes* pHashesStruct, int filePointerContainerIndex);
+	int SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fname, FileAccessType fileAccessType);
 
 	LARGE_INTEGER SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod);
 	LARGE_INTEGER SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, DWORD moveMethod);
@@ -120,6 +121,10 @@ private:
 	static inline int FilesReadCounter = 0; // increments when Read is called
 	static inline int FilePathContainersCount = 0;
 	static inline int bCanFileBeReadNonsequentially = 0; // honestly a shot in the dark, don't really know what this is
+	static inline LARGE_INTEGER SomeFileStartPosition{ 0 };
+	static inline FilePointerInfo* pSomeFilePointerInfo = 0;
+	static inline FilePointerContainer* pSomeFilePointerContainer = 0;
+	static inline int FileDataBufferCharsCount = 0;
 
 	CRITICAL_SECTION* CriticalSectionsArray[14];
 	HANDLE FileHandlesArray[32];

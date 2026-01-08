@@ -26,7 +26,7 @@ int __cdecl GetHashIndex(Hashes *pHashesStruct, char *path_in) {
     ++current_path_offset;
     path_hash = 1677619 * (path_hash ^ current_char);
   }
-  number_of_hashes = pHashesStruct->numOfHashes;
+  number_of_hashes = pHashesStruct->someIndex;
   hash_index = 0;
   if ( number_of_hashes <= 0 ) {
 LABEL_7:
