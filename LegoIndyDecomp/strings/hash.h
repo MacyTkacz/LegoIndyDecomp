@@ -11,7 +11,11 @@ struct Hash {
 	char* str;
 };
 
-struct Hashes {
+class Hashes {
+public:
+
+    int LinkAvailableFilePointerContainer(int hashesStructIndex);
+
     int status;
     int someIndex;
     SomeStruct *SomeStructArray;

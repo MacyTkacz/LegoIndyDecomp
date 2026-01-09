@@ -1,6 +1,7 @@
 #include "hash.h"
 #include <strings/strings.h>
 #include <strings/std.h>
+#include <fileio/fileio.h>
 
 int __cdecl GetHashIndex(Hashes *pHashesStruct, char *path_in) {
   char *current_path_offset; // ecx
@@ -183,3 +184,27 @@ VALIDATE_HASH_INDEX:
 	return -1;
 
 }
+
+int Hashes::LinkAvailableFilePointerContainer(int hashesStructIndex) {
+
+	FileIOManager* fiom = FileIOManager::Instance();
+	if (!fiom)
+		return -1;
+
+	RawEnterCriticalSection( fiom->GetCriticalSectionIndex() );
+
+	int availableFilePointerContainerIndex = 0;
+	for (int i = 0; filePointerContainersArray[i].fileHandleIndex != -1; i++) {
+		if (++availableFilePointerContainerIndex >= 8) {
+			availableFilePointerContainerIndex = -1;
+			goto EXIT;
+		}
+	}
+	filePointerContainersArray[availableFilePointerContainerIndex].fileHandleIndex = hashesStructIndex;
+
+EXIT:
+	RawLeaveCriticalSection( fiom->GetCriticalSectionIndex() );
+	return availableFilePointerContainerIndex;
+
+}
+

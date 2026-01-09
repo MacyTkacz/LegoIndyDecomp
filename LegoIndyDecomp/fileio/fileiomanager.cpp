@@ -4,9 +4,10 @@
 
 // temporary fixes for uninitialized data
 FileIOManager::FileIOManager() {
+
 	CriticalSectionsArray[0] = new CRITICAL_SECTION();
-	memset(FileHandlesArray, (__int32)-1, 32);
 	FileDataContainersArray[0].pFileHandleContainer = &FileHandleContainersArray[0];
+
 }
 
 FileIOManager* FileIOManager::Instance() {
@@ -87,17 +88,17 @@ bool FileIOManager::CloseFileHandle(int fileHandleIndex) {
 void FileIOManager::CloseResource(int resourceID) {
 
 	// outside of valid ID range
-	if (resourceID >= MaximumValidResourceID)
+	if (resourceID >= RSRCID_MAX)
 		return;
 
-	if (resourceID >= FileBufferContainersBase) {
+	if (resourceID >= RSRCID_FILEBUFFERCONTAINERSBASE) {
 
 		// close FilePointerInfo
-		if (resourceID >= FilePointerInfosBase)
+		if (resourceID >= RSRCID_FILEPOINTERINFOSBASE)
 			return; // NOT YET IMPLEMENTED
 
 		// close FileBufferContainer
-		*(&FileBufferContainersArray[resourceID-FileBufferContainersBase].bIsInUse) = 0;
+		*(&FileBufferContainersArray[resourceID-RSRCID_FILEBUFFERCONTAINERSBASE].bIsInUse) = 0;
 		return;
 	}
 
@@ -279,16 +280,16 @@ LARGE_INTEGER FileIOManager::SetFilePointer(FileHandleContainer* pFileHandleCont
 
 LARGE_INTEGER FileIOManager::SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod) {
 
-	if (resourceID >= MaximumValidResourceID)
+	if (resourceID >= RSRCID_MAX)
 		return LARGE_INTEGER{ 0 };
 
-	if (resourceID < FileBufferContainersBase)
-		return SetFilePointer(&FileHandleContainersArray[resourceID - FileHandleContainersBase], distToMove, moveMethod);
+	if (resourceID < RSRCID_FILEBUFFERCONTAINERSBASE)
+		return SetFilePointer(&FileHandleContainersArray[resourceID - RSRCID_FILEHANDLECONTAINERSBASE], distToMove, moveMethod);
 
-	if (resourceID < FilePointerInfosBase)
-		return SetFilePointer(&FileBufferContainersArray[resourceID - FileBufferContainersBase], distToMove, moveMethod);
+	if (resourceID < RSRCID_FILEPOINTERINFOSBASE)
+		return SetFilePointer(&FileBufferContainersArray[resourceID - RSRCID_FILEBUFFERCONTAINERSBASE], distToMove, moveMethod);
 
-	SetFilePointer(&FilePointerInfoArray[resourceID - FilePointerInfosBase], distToMove, moveMethod);
+	SetFilePointer(&FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE], distToMove, moveMethod);
 
 }
 
@@ -297,11 +298,11 @@ int FileIOManager::FormatAvailableFileBufferContainer(char* buffer, int bufferSi
 	if (bufferSize <= 0 || bSomeBool > 1)
 		return 0;
 
-	FileBufferContainer* fileBufferContainersArray = Instance()->FileBufferContainersArray;
+	auto fileBufferContainersArray = Instance()->FileBufferContainersArray;
 	
 	int i;
 	for (i = 0; fileBufferContainersArray[i].bIsInUse; i++) {
-		if (i == GetFileBufferContainersCount()) return 0;
+		if (i == FileBufferContainersArray.size()) return 0;
 	}
 
 	FileBufferContainer* pFileBufferContainer = &fileBufferContainersArray[i];
@@ -312,18 +313,34 @@ int FileIOManager::FormatAvailableFileBufferContainer(char* buffer, int bufferSi
 	pFileBufferContainer->filePointerPosition = buffer;
 	pFileBufferContainer->bIsInUse = 1;
 
-	return i + FileBufferContainersBase;
+	return i + RSRCID_FILEBUFFERCONTAINERSBASE;
 
 }
 
-void FileIOManager::RawEnterCriticalSection(int criticalSectionIndex) {
-	if (CriticalSectionIndex - 1 <= 11)
-		EnterCriticalSection(CriticalSectionsArray[CriticalSectionIndex]);
+void RawEnterCriticalSection(int criticalSectionIndex) {
+
+	FileIOManager* fiom = FileIOManager::Instance();
+	if (!fiom)
+		return;
+
+	CRITICAL_SECTION* criticalSection = fiom->GetCriticalSection(criticalSectionIndex);
+
+	if (criticalSectionIndex - 1 <= 11)
+		EnterCriticalSection( criticalSection );
+
 }
 
-void FileIOManager::RawLeaveCriticalSection(int criticalSectionIndex) {
-	if (CriticalSectionIndex - 1 <= 11)
-		LeaveCriticalSection(CriticalSectionsArray[CriticalSectionIndex]);
+void RawLeaveCriticalSection(int criticalSectionIndex) {
+
+	FileIOManager* fiom = FileIOManager::Instance();
+	if (!fiom)
+		return;
+
+	CRITICAL_SECTION* criticalSection = fiom->GetCriticalSection(criticalSectionIndex);
+
+	if (criticalSectionIndex - 1 <= 11)
+		LeaveCriticalSection( criticalSection );
+
 }
 
 FilePathContainer* FileIOManager::GetFilePathContainerFromPath(char* fpath) {
@@ -335,7 +352,7 @@ FilePathContainer* FileIOManager::GetFilePathContainerFromPath(char* fpath) {
 	}
 
 	for (FilePathContainer filePathContainer : FilePathContainersArray) {
-		if (!_strncmp(fpath, filePathContainer.absolutePath, filePathContainer.pathLength ) )
+		if (!_strncmp(fpath, filePathContainer.path, filePathContainer.pathLength ) )
 			return &filePathContainer;
 	}
 
@@ -349,11 +366,11 @@ FilePathContainer* FileIOManager::GetFilePathContainerFromPath(char* fpath) {
 int FileIOManager::AssertValidStructLinkage(int resourceID) {
 
 	int i = resourceID;
-	while (i < FileBufferContainersBase) {
-		FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[i - FilePointerInfosBase];
+	while (i < RSRCID_FILEBUFFERCONTAINERSBASE) {
+		FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[i - RSRCID_FILEPOINTERINFOSBASE];
 		int filePointerContainerIndex = pFilePointerInfo->filePointerContainerIndex;
 		i = pFilePointerInfo->pHashesStruct->filePointerContainersArray[filePointerContainerIndex].fileHandleID;
-		if (i < FilePointerInfosBase)
+		if (i < RSRCID_FILEPOINTERINFOSBASE)
 			break;
 	}
 	return 0;
@@ -378,8 +395,8 @@ int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* 
 	char joinedFpath[256];
 	pFilePathContainer->pathJoiningFunction(pFilePathContainer, joinedFpath, fpath, 256);
 
-	if (pFilePathContainer->pathTypeInfo.status1 == 1)
-		return MaximumValidResourceID;
+	if ((char)pFilePathContainer->filePathInfo.status == 1)
+		return RSRCID_MAX;
 
 	int fileHandleIndex = CreateFileHandle(joinedFpath, fileAccessType);
 	if (fileHandleIndex < 0)
@@ -427,7 +444,7 @@ int FileIOManager::GetAvailableFilePointerInfoIndex() {
 	int availableIndex = -1;
 
 	RawEnterCriticalSection(CriticalSectionIndex);
-	for (int i = 0; i < MaxFilePointerInfoCount; i++) {
+	for (int i = 0; i < FilePointerInfoArray.size(); i++) {
 		FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[i];
 		if (!pFilePointerInfo->bIsInUse) {
 			availableIndex = i;
@@ -438,27 +455,6 @@ int FileIOManager::GetAvailableFilePointerInfoIndex() {
 		FilePointerInfoArray[availableIndex].bIsInUse = 1;
 	RawLeaveCriticalSection(CriticalSectionIndex);
 	return availableIndex;
-
-}
-
-int FileIOManager::LinkAvailableFilePointerContainerWithHashesStruct(Hashes* pHashesStruct, int hashesStructIndex) {
-
-	FilePointerContainer* filePointerContainersArray = pHashesStruct->filePointerContainersArray;
-
-	RawEnterCriticalSection(CriticalSectionIndex);
-
-	int availableFilePointerContainerIndex = 0;
-	for (int i = 0; filePointerContainersArray[i].fileHandleIndex != -1; i++) {
-		if (++availableFilePointerContainerIndex >= 8) {
-			availableFilePointerContainerIndex = -1;
-			goto EXIT;
-		}
-	}
-	filePointerContainersArray[availableFilePointerContainerIndex].fileHandleIndex = hashesStructIndex;
-
-EXIT:
-	RawLeaveCriticalSection(CriticalSectionIndex);
-	return availableFilePointerContainerIndex;
 
 }
 
@@ -499,7 +495,7 @@ int FileIOManager::SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fna
 	if (hashesStructIndex == -1)
 		return 0;
 
-	int filePointerContainerIndex = LinkAvailableFilePointerContainerWithHashesStruct(pHashesStruct, hashesStructIndex);
+	int filePointerContainerIndex = pHashesStruct->LinkAvailableFilePointerContainer(hashesStructIndex);
 	if (filePointerContainerIndex == -1) {
 		FilePointerInfoArray[hashesStructIndex].bIsInUse = 0;
 		return 0;
@@ -533,6 +529,9 @@ int FileIOManager::SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fna
 		SomeFileStartPosition = pFilePointerInfo->fileStartPosition;
 		FileDataBufferCharsCount = 0;
 	}
-	return hashesStructIndex + FilePointerInfosBase;
+	return hashesStructIndex + RSRCID_FILEPOINTERINFOSBASE;
 
 }
+
+CRITICAL_SECTION* FileIOManager::GetCriticalSection(int criticalSectionIndex) { return CriticalSectionsArray[criticalSectionIndex]; }
+CRITICAL_SECTION* FileIOManager::GetCriticalSection() { return CriticalSectionsArray[CriticalSectionIndex]; }

@@ -3,6 +3,16 @@
 
 #include <Windows.h>
 #include <strings/hash.h>
+#include <strings/strings.h>
+#include <array>
+
+// ==================== CONSTANTS ====================
+
+// resource ID reference values
+constexpr int RSRCID_FILEHANDLECONTAINERSBASE = 0;
+constexpr int RSRCID_FILEBUFFERCONTAINERSBASE = (1<<10);
+constexpr int RSRCID_FILEPOINTERINFOSBASE     = (1<<11);
+constexpr int RSRCID_MAX					  = (1<<12);
 
 // ===================== STRUCTS =====================
 
@@ -42,28 +52,6 @@ struct FilePointerInfo {
 	DWORD dw4;
 };
 
-struct PathTypeInfo {
-	int status1;
-	char pad1[12];
-	char separator;
-};
-
-struct FilePathContainer {
-	PathTypeInfo pathTypeInfo;
-	char pad1[35];
-	char absolutePath[16];
-	int pathLength;
-	char pad2[4];
-	char drivePrefix[16];
-	char pad3[16];
-	char someStr[32];
-	char pad4[32];
-	char relativePath[16];
-	char pad5[368];
-	int (*pathJoiningFunction)(FilePathContainer *, char *fpath_out, char *fpath_in, int size);
-    int (*func2)(FilePathContainer *);
-};
-
 // ===================== CLASSES =====================
 
 class FileBufferContainer {
@@ -83,67 +71,71 @@ public:
 
 	// reads file data into an available FileDataContainer
 	int Read(FileHandleContainer* pFileHandleContainer);
-	int AdvanceCriticalSection();
 	int CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType);
 	bool CloseFileHandle(int fileHandleIndex);
 	void CloseResource(int resourceID);
 	int FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int someValue);
 	FilePathContainer* GetFilePathContainerFromPath(char* fpath);
+
 	int GetAvailableFilePointerInfoIndex();
-	int LinkAvailableFilePointerContainerWithHashesStruct(Hashes* pHashesStruct, int hashesStructIndex);
-	int AssertValidStructLinkage(int resourceID);
-	int SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* pHashesStruct, int a4);
+	int AdvanceCriticalSection();
+
 	unsigned __int64 CalculateStatusDependentValue(Hashes* pHashesStruct, int base);
 	int InitializeFilePointerContainerFileHandleID(Hashes* pHashesStruct, int filePointerContainerIndex);
 	int SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fname, FileAccessType fileAccessType);
+
+	int SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* pHashesStruct, int a4);
+	int AssertValidStructLinkage(int resourceID);
 
 	LARGE_INTEGER SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod);
 	LARGE_INTEGER SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, DWORD moveMethod);
 	LARGE_INTEGER SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, DWORD moveMethod);
 	LARGE_INTEGER SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, DWORD moveMethod);
 
-	static constexpr int GetFileBufferContainersCount() { return 20; }
-
-	// resource ID reference values
-	static constexpr int FileHandleContainersBase = 0;
-	static constexpr int FileBufferContainersBase = 1024;
-	static constexpr int FilePointerInfosBase = 2048;
-	static constexpr int MaximumValidResourceID = 4096;
-
-	static constexpr int MaxFilePathContainersCount = 16;
-	static constexpr int MaxFilePointerInfoCount = 16;
+	static inline int		 GetCriticalSectionIndex() { return CriticalSectionIndex; }
+	static CRITICAL_SECTION* GetCriticalSection(int criticalSectionIndex);
+	static CRITICAL_SECTION* GetCriticalSection();
 
 private:
+	// singleton instance
 	static inline FileIOManager* _instance = 0;
 
+	static inline std::array<CRITICAL_SECTION*, 14> CriticalSectionsArray{ 0 };
 	static inline int CriticalSectionIndex = -1;
 	static inline int CriticalSectionLockCount = 0;
-	static inline int FilesReadCounter = 0; // increments when Read is called
-	static inline int FilePathContainersCount = 0;
-	static inline int bCanFileBeReadNonsequentially = 0; // honestly a shot in the dark, don't really know what this is
-	static inline LARGE_INTEGER SomeFileStartPosition{ 0 };
-	static inline FilePointerInfo* pSomeFilePointerInfo = 0;
-	static inline FilePointerContainer* pSomeFilePointerContainer = 0;
-	static inline int FileDataBufferCharsCount = 0;
 
-	CRITICAL_SECTION* CriticalSectionsArray[14];
-	HANDLE FileHandlesArray[64];
-	FileHandleContainer FileHandleContainersArray[32];
-	FileBufferContainer FileBufferContainersArray[16];
-	FileDataContainer FileDataContainersArray[4];
-	FilePointerInfo FilePointerInfoArray[MaxFilePointerInfoCount];
-	FilePathContainer FilePathContainersArray[MaxFilePathContainersCount];
+	static inline int FilesReadCounter = 0; // increments when Read is called
+	static inline int FileDataBufferCharsCount = 0;
+	static inline int bCanFileBeReadNonsequentially = 0; // honestly a shot in the dark, don't really know what this is
+
+	static inline LARGE_INTEGER SomeFileStartPosition{ 0 };
+	static inline LARGE_INTEGER SomeLargeInteger{ 0 };
+
+	static inline FilePointerContainer* pSomeFilePointerContainer = 0;
+
+	static inline std::array<HANDLE, 64> FileHandlesArray{ (HANDLE)-1 };
+	static inline std::array<FileHandleContainer, 32> FileHandleContainersArray{0};
+
+	static inline std::array<FileBufferContainer, 16> FileBufferContainersArray{0};
+	static inline std::array<FileDataContainer, 4> FileDataContainersArray{0};
+
+	static inline FilePointerInfo* pSomeFilePointerInfo = 0;
+	static inline std::array<FilePointerInfo, 16> FilePointerInfoArray{0};
 
 	FilePathContainer DefaultFilePathContainer{};
+	static inline int FilePathContainersCount = 0;
+	static inline std::array<FilePathContainer, 16> FilePathContainersArray{0};
 
-	LARGE_INTEGER SomeLargeInteger;
 
 	// wrappers for Windows api
 	int RawWrite(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite);
 	int RawRead(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToRead);
 	LARGE_INTEGER RawSetFilePointer(int fileHandleIndex, LARGE_INTEGER distToMove, int moveMethod);
-	void RawEnterCriticalSection(int criticalSectionIndex);
-	void RawLeaveCriticalSection(int criticalSectionIndex);
 };
+
+// ===================== FUNCTIONS =====================
+
+void RawEnterCriticalSection(int criticalSectionIndex);
+void RawLeaveCriticalSection(int criticalSectionIndex);
 
 #endif // LEGOINDY_FILEIO_H
