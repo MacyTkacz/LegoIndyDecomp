@@ -3,83 +3,80 @@
 #include <strings/std.h>
 #include <fileio/fileio.h>
 
-int __cdecl GetHashIndex(Hashes *pHashesStruct, char *path_in) {
-  char *current_path_offset; // ecx
-  char current_char; // al
-  int path_hash; // edx
-  int number_of_hashes; // esi
-  int hash_index; // eax
-  int *pCurrentHash; // ecx
-  int num_of_strings; // ebp
-  char *current_str_offset; // ecx
-  int _; // ebx
-  char *current_path_offset_2; // esi
-  char current_buff_char; // al
-  char current_path_char; // dl
-  int len_str; // eax
-  char *final_str_offset; // eax
-  int current_str_length; // eax
+int __cdecl GetHashIndex(Hashes *pHashesStruct, char *path) {
 
-  current_path_offset = path_in;
+  int *pCurrentHash; // ecx
+  char *currentPathOffset2; // esi
+  char currentBufferChar; // al
+  char current_path_char; // dl
+  int stringLength; // eax
+  char *finalStringOffset; // eax
+  int currentStringLength; // eax
+
+  char* currentPathOffset = path;
+  char currentChar = *path;
+
   // generates a string hash, possibly using FNV-1a
-  current_char = *path_in;
-  for ( path_hash = -2128831035; *current_path_offset; current_char = *current_path_offset ) {
-    ++current_path_offset;
-    path_hash = 1677619 * (path_hash ^ current_char);
+  int pathHash;
+  for ( pathHash = -2128831035; *currentPathOffset; currentChar = *currentPathOffset ) {
+    ++currentPathOffset;
+    pathHash = 1677619 * (pathHash ^ currentChar);
   }
-  number_of_hashes = pHashesStruct->someIndex;
-  hash_index = 0;
-  if ( number_of_hashes <= 0 ) {
+
+  int hashIndex = 0;
+  int numberOfHashes = pHashesStruct->someIndex;
+
+  if ( numberOfHashes <= 0 ) {
 LABEL_7:
-    num_of_strings = pHashesStruct->numOfStringHashIndexPairs;
-    if ( num_of_strings )
+    int numberOfStrings = pHashesStruct->numOfStringHashIndexPairs;
+    if ( numberOfStrings )
     {
-      current_str_offset = pHashesStruct->stringHashIndexPairsBuffer;
-      for ( _ = 0; _ < num_of_strings; ++_ )
+      char* currentStringOffset = pHashesStruct->stringHashIndexPairsBuffer;
+      for ( int _ = 0; _ < numberOfStrings; ++_ )
       {
-        current_path_offset_2 = path_in;
-        if ( current_str_offset )
+        currentPathOffset2 = path;
+        if ( currentStringOffset )
         {
           while ( 1 )
           {
-            current_buff_char = current_path_offset_2[current_str_offset - path_in];
-            current_path_char = *current_path_offset_2;
-            if ( current_buff_char > *current_path_offset_2 || current_buff_char < *current_path_offset_2 )
+            currentBufferChar = currentPathOffset2[currentStringOffset - path];
+            current_path_char = *currentPathOffset2;
+            if ( currentBufferChar > *currentPathOffset2 || currentBufferChar < *currentPathOffset2 )
               break;
-            ++current_path_offset_2;
-            if ( !current_buff_char || !current_path_char )
+            ++currentPathOffset2;
+            if ( !currentBufferChar || !current_path_char )
             {
-              len_str = 0;
-              if ( *current_str_offset )
+              stringLength = 0;
+              if ( *currentStringOffset )
               {
                 do
-                  ++len_str;
-                while ( current_str_offset[len_str] );
+                  ++stringLength;
+                while ( currentStringOffset[stringLength] );
               }
               // finds address after some_str's null-terminator
               // aligns to even address
               // and returns int16 value at that address
-              final_str_offset = &current_str_offset[len_str + 1];
-              if ( ((unsigned __int8)final_str_offset & 1) != 0 )
-                ++final_str_offset;
-              return *(__int16 *)final_str_offset;// that string's hash index?
+              finalStringOffset = &currentStringOffset[stringLength + 1];
+              if ( (reinterpret_cast<uintptr_t>(currentStringOffset) & 1) != 0 )
+                ++finalStringOffset;
+              return *(__int16 *)finalStringOffset;// that string's hash index?
             }
           }
         }
-        current_str_length = 0;
-        if ( *current_str_offset )
+        currentStringLength = 0;
+        if ( *currentStringOffset )
         {
           do
-            ++current_str_length;
-          while ( current_str_offset[current_str_length] );
+            ++currentStringLength;
+          while ( currentStringOffset[currentStringLength] );
         }
         // proceeds to next string in stringsData
         // each string is some length of chars (null-terminated)
         // followed by 2 bytes of data, the last of which may be returned
         // a third byte may exist for 2-byte alignment
-        current_str_offset += current_str_length + 3;
-        if ( ((unsigned __int8)current_str_offset & 1) != 0 )
-          ++current_str_offset;
+        currentStringOffset += currentStringLength + 3;
+        if ( (reinterpret_cast<uintptr_t>(currentStringOffset) & 1) != 0 )
+          ++currentStringOffset;
       }
     }
     return -1;
@@ -87,15 +84,15 @@ LABEL_7:
   else
   {
     pCurrentHash = pHashesStruct->hashes;
-    while ( *pCurrentHash != path_hash )
+    while ( *pCurrentHash != pathHash )
     {
-      ++hash_index;
+      ++hashIndex;
       ++pCurrentHash;
-      if ( hash_index >= number_of_hashes )
+      if ( hashIndex >= numberOfHashes )
         goto LABEL_7;
     }
   }
-  return hash_index;
+  return hashIndex;
 }
 
 int __cdecl GetFileDataIndex(Hashes* pHashesStruct, char* fpath) {
@@ -157,7 +154,7 @@ int __cdecl GetFileDataIndex(Hashes* pHashesStruct, char* fpath) {
 			break;
 		hashIndex = currentHash->nextOnNonmatch;
 
-VALIDATE_HASH_INDEX:
+VALIDATE_hashIndex:
 		if (!hashIndex)
 			return -1;
 
@@ -173,7 +170,7 @@ VALIDATE_HASH_INDEX:
 		if (nextDirectoryName)
 			*nextDirectoryName = 0;
 
-		goto VALIDATE_HASH_INDEX;
+		goto VALIDATE_hashIndex;
 		
 	}
 
@@ -207,4 +204,3 @@ EXIT:
 	return availableFilePointerContainerIndex;
 
 }
-
