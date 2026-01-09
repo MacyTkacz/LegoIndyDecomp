@@ -110,8 +110,8 @@ public:
 	static constexpr int FilePointerInfosBase = 2048;
 	static constexpr int MaximumValidResourceID = 4096;
 
-	static constexpr int MaxFilePathContainersCount = 100;
-	static constexpr int MaxFilePointerInfoCount = 20;
+	static constexpr int MaxFilePathContainersCount = 16;
+	static constexpr int MaxFilePointerInfoCount = 16;
 
 private:
 	static inline FileIOManager* _instance = 0;
@@ -127,9 +127,9 @@ private:
 	static inline int FileDataBufferCharsCount = 0;
 
 	CRITICAL_SECTION* CriticalSectionsArray[14];
-	HANDLE FileHandlesArray[32];
+	HANDLE FileHandlesArray[64];
 	FileHandleContainer FileHandleContainersArray[32];
-	FileBufferContainer FileBufferContainersArray[20];
+	FileBufferContainer FileBufferContainersArray[16];
 	FileDataContainer FileDataContainersArray[4];
 	FilePointerInfo FilePointerInfoArray[MaxFilePointerInfoCount];
 	FilePathContainer FilePathContainersArray[MaxFilePathContainersCount];
