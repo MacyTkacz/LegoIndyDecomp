@@ -74,11 +74,11 @@ public:
 	int CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType);
 	bool CloseFileHandle(int fileHandleIndex);
 	void CloseResource(int resourceID);
-	int FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int someValue);
-	FilePathContainer* GetFilePathContainerFromPath(char* fpath);
 
+	FilePathContainer* GetFilePathContainerFromPath(char* fpath);
+	int FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int someValue);
+	int PopulateFileDataContainer(FileHandleContainer* pFileHandleContainer);
 	int GetAvailableFilePointerInfoIndex();
-	int AdvanceCriticalSection();
 
 	unsigned __int64 CalculateStatusDependentValue(Hashes* pHashesStruct, int base);
 	int InitializeFilePointerContainerFileHandleID(Hashes* pHashesStruct, int filePointerContainerIndex);
@@ -92,6 +92,7 @@ public:
 	LARGE_INTEGER SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, DWORD moveMethod);
 	LARGE_INTEGER SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, DWORD moveMethod);
 
+	int AdvanceCriticalSection();
 	static inline int		 GetCriticalSectionIndex() { return CriticalSectionIndex; }
 	static CRITICAL_SECTION* GetCriticalSection(int criticalSectionIndex);
 	static CRITICAL_SECTION* GetCriticalSection();
@@ -107,6 +108,7 @@ private:
 	static inline int FilesReadCounter = 0; // increments when Read is called
 	static inline int FileDataBufferCharsCount = 0;
 	static inline int bCanFileBeReadNonsequentially = 0; // honestly a shot in the dark, don't really know what this is
+	static inline int LatestWriteIndex = 0;
 
 	static inline LARGE_INTEGER SomeFileStartPosition{ 0 };
 	static inline LARGE_INTEGER SomeLargeInteger{ 0 };

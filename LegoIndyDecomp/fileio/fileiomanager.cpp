@@ -534,5 +534,54 @@ int FileIOManager::SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fna
 
 }
 
+// chooses one of four global "FileDataContainer"s and reads in file data
+int FileIOManager::PopulateFileDataContainer(FileHandleContainer* pFileHandleContainer) {
+
+	int latestWriteIndex = LatestWriteIndex;
+	int oldestWriteIndex = latestWriteIndex;
+	int fileDataContainerIndex = 0;
+
+	// chooses the FileDataContainer written to earliest
+	if (FileDataContainersArray[0].lastWriteIndex < latestWriteIndex) {
+		oldestWriteIndex = FileDataContainersArray[0].lastWriteIndex;
+		goto CHOOSE_FILEDATACONTAINER;
+	}
+	if (FileDataContainersArray[1].lastWriteIndex < latestWriteIndex) {
+		oldestWriteIndex = FileDataContainersArray[1].lastWriteIndex;
+		fileDataContainerIndex = 1;
+		goto CHOOSE_FILEDATACONTAINER;
+	}
+	if (FileDataContainersArray[2].lastWriteIndex < latestWriteIndex) {
+		oldestWriteIndex = FileDataContainersArray[2].lastWriteIndex;
+		fileDataContainerIndex = 2;
+		goto CHOOSE_FILEDATACONTAINER;
+	}
+	if (FileDataContainersArray[3].lastWriteIndex < latestWriteIndex) {
+		fileDataContainerIndex = 3;
+	}
+
+CHOOSE_FILEDATACONTAINER:
+
+	FileDataContainer* pFileDataContainer = &FileDataContainersArray[fileDataContainerIndex];
+	if (pFileDataContainer->pFileHandleContainer)
+		pFileDataContainer->pFileHandleContainer = 0;
+	pFileDataContainer->lastWriteIndex = latestWriteIndex;
+	pFileDataContainer->pFileHandleContainer = pFileHandleContainer;
+
+	int fileDataBufferSize = pFileHandleContainer->fileDataLength;
+	LatestWriteIndex = latestWriteIndex + 1;
+	pFileHandleContainer->pFileDataContainer = pFileDataContainer;
+
+	if (!fileDataBufferSize)
+		return 0;
+
+	RawSetFilePointer(pFileHandleContainer->fileHandleIndex, ToLargeInt(-fileDataBufferSize), FILE_CURRENT);
+	return RawRead(
+		pFileHandleContainer->fileHandleIndex,
+		pFileDataContainer->dataBuffer,
+		pFileHandleContainer->fileDataLength);
+
+}
+
 CRITICAL_SECTION* FileIOManager::GetCriticalSection(int criticalSectionIndex) { return CriticalSectionsArray[criticalSectionIndex]; }
 CRITICAL_SECTION* FileIOManager::GetCriticalSection() { return CriticalSectionsArray[CriticalSectionIndex]; }
