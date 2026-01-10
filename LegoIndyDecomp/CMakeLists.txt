@@ -7,7 +7,7 @@ set(CMAKE_CXX_COMPILER g++)
 add_executable (LegoIndyDecomp ${SOURCE_FILES} ${HEADER_FILES})
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-	target_compile_options(LegoIndyDecomp PRIVATE -std=c++20)
+	target_compile_options(LegoIndyDecomp PRIVATE -std=c++20 -g)
 endif()
 
 target_include_directories(LegoIndyDecomp PRIVATE .)

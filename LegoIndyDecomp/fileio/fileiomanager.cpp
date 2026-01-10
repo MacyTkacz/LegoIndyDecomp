@@ -351,9 +351,10 @@ FilePathContainer* FileIOManager::GetFilePathContainerFromPath(char* fpath) {
 			return 0;
 	}
 
-	for (FilePathContainer filePathContainer : FilePathContainersArray) {
-		if (!_strncmp(fpath, filePathContainer.path, filePathContainer.pathLength ) )
-			return &filePathContainer;
+	for (int i; i < FilePathContainersArray.size(); i++) {
+		FilePathContainer* pFilePathContainer = &FilePathContainersArray[i];
+		if (!_strncmp(fpath, pFilePathContainer->path, pFilePathContainer->pathLength ) )
+			return pFilePathContainer;
 	}
 
 	return 0;
