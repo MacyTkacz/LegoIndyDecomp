@@ -289,7 +289,7 @@ LARGE_INTEGER FileIOManager::SetFilePointer(int resourceID, LARGE_INTEGER distTo
 	if (resourceID < RSRCID_FILEPOINTERINFOSBASE)
 		return SetFilePointer(&FileBufferContainersArray[resourceID - RSRCID_FILEBUFFERCONTAINERSBASE], distToMove, moveMethod);
 
-	SetFilePointer(&FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE], distToMove, moveMethod);
+	return SetFilePointer(&FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE], distToMove, moveMethod);
 
 }
 
