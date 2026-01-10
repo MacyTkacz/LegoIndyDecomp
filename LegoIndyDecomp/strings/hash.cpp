@@ -103,7 +103,6 @@ int __cdecl GetFileDataIndex(Hashes* pHashesStruct, char* fpath) {
 	char* startOfFpath;
 	char* bufferOffset;
 	char* currentDirectoryName;
-	char* subName;
 	char* currentPathOffset;
 	char* nextDirectoryName;
 
@@ -114,24 +113,7 @@ int __cdecl GetFileDataIndex(Hashes* pHashesStruct, char* fpath) {
 	int hashIndex;
 	__int16 hashValue;
 
-	startOfFpath = fpath;
-	if (*fpath == '@')
-		startOfFpath += 4;
-	bufferOffset = path;
-
-	if (startOfFpath) {
-		currentChar = *startOfFpath;
-		if (*startOfFpath) {
-			fpathToBufferDelta = startOfFpath - path;
-			do {
-				*bufferOffset = currentChar;
-				currentChar = (bufferOffset++)[fpathToBufferDelta + 1];
-			}
-			while (currentChar);
-		}
-	}
-
-	*bufferOffset = 0;
+  strcpy(path,fpath + (*fpath == '@' ? 4 : 0));
 
 	MakePathUniform(0, path);
 
@@ -142,10 +124,9 @@ int __cdecl GetFileDataIndex(Hashes* pHashesStruct, char* fpath) {
 		return GetHashIndex(pHashesStruct, path);
 
 	hashIndex = hashArray->nextOnMatch;
-	subName = GetStringStartingWith(path, "\\");
-	currentPathOffset = subName;
-	if (subName)
-		*subName = 0;
+	currentPathOffset = GetStringStartingWith(path, "\\");
+	if (currentPathOffset)
+		*currentPathOffset = 0;
 
 	while (1) {
 

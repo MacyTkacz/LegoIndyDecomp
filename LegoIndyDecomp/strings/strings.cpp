@@ -66,18 +66,17 @@ char *__cdecl GetStringStartingWith(char *str, const char *starts_with) {
   char *current_separator_offset; // ecx
   char current_separator_char; // dl
 
-  char* target = const_cast<char*>(starts_with);
+  int targetLength = _strlen(const_cast<char*>(starts_with));
+  char target[targetLength];
+  _strcpy(target,const_cast<char*>(starts_with));
 
   result = str;
   if ( !*str )
     return 0;
-  for ( offset_into_string = str - target; ; ++offset_into_string )
-  {
+  for ( offset_into_string = str - target; ; ++offset_into_string ) {
     current_separator_offset = target;
-    if ( *target )
-    {
-      while ( 1 )
-      {
+    if ( *target ) {
+      while ( 1 ) {
         current_separator_char = current_separator_offset[offset_into_string];
         if ( !current_separator_char || current_separator_char != *current_separator_offset )
           break;

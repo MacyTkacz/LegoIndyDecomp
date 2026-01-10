@@ -7,7 +7,8 @@ enum PathType { UPPERCASE, MIXEDCASE };
 
 struct FilePathInfo {
     int status;
-	char pad1[12];
+	char pad1[8];
+	int someInt;
 	char separator;
 };
 
