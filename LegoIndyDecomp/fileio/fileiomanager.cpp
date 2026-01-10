@@ -583,5 +583,26 @@ CHOOSE_FILEDATACONTAINER:
 
 }
 
+int FileIOManager::GetResourceBufferSize(int resourceID) {
+
+	if (resourceID >= RSRCID_MAX)
+		return 0;
+
+	if (resourceID >= RSRCID_FILEPOINTERINFOSBASE) {
+		FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE];
+		if (pFilePointerInfo->bIsRelative)
+			return pFilePointerInfo->fileDataSizeWhen0x28isNonzero;
+		return pFilePointerInfo->fileDataSize;
+	}
+
+	if (resourceID < RSRCID_FILEBUFFERCONTAINERSBASE)
+		// return end position of FileHandleContainer buffer (relative)
+		return FileHandleContainersArray[resourceID-1].fileEndPosition.LowPart;
+
+	FileBufferContainer* pFileBufferContainer = &FileBufferContainersArray[resourceID-RSRCID_FILEBUFFERCONTAINERSBASE];
+	return pFileBufferContainer->textBufferEnd - pFileBufferContainer->textBuffer;	
+
+}
+
 CRITICAL_SECTION* FileIOManager::GetCriticalSection(int criticalSectionIndex) { return CriticalSectionsArray[criticalSectionIndex]; }
 CRITICAL_SECTION* FileIOManager::GetCriticalSection() { return CriticalSectionsArray[CriticalSectionIndex]; }

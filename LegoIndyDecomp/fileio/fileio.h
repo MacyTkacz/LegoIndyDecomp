@@ -79,6 +79,7 @@ public:
 	int FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int someValue);
 	int PopulateFileDataContainer(FileHandleContainer* pFileHandleContainer);
 	int GetAvailableFilePointerInfoIndex();
+	int GetResourceBufferSize(int resourceID);
 
 	unsigned __int64 CalculateStatusDependentValue(Hashes* pHashesStruct, int base);
 	int InitializeFilePointerContainerFileHandleID(Hashes* pHashesStruct, int filePointerContainerIndex);
