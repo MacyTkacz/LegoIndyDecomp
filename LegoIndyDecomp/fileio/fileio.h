@@ -95,8 +95,8 @@ public:
 
 	int AdvanceCriticalSection();
 	static inline int		 GetCriticalSectionIndex() { return CriticalSectionIndex; }
-	static CRITICAL_SECTION* GetCriticalSection(int criticalSectionIndex);
-	static CRITICAL_SECTION* GetCriticalSection();
+	static CRITICAL_SECTION* FileIOManager::GetCriticalSection(int criticalSectionIndex) { return CriticalSectionsArray[criticalSectionIndex]; }
+	static CRITICAL_SECTION* FileIOManager::GetCriticalSection() { return CriticalSectionsArray[CriticalSectionIndex]; }
 
 private:
 	// singleton instance

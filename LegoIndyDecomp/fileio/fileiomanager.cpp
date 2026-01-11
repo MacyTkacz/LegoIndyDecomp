@@ -603,6 +603,3 @@ int FileIOManager::GetResourceBufferSize(int resourceID) {
 	return pFileBufferContainer->textBufferEnd - pFileBufferContainer->textBuffer;	
 
 }
-
-CRITICAL_SECTION* FileIOManager::GetCriticalSection(int criticalSectionIndex) { return CriticalSectionsArray[criticalSectionIndex]; }
-CRITICAL_SECTION* FileIOManager::GetCriticalSection() { return CriticalSectionsArray[CriticalSectionIndex]; }
