@@ -603,3 +603,100 @@ int FileIOManager::GetResourceBufferSize(int resourceID) {
 	return pFileBufferContainer->textBufferEnd - pFileBufferContainer->textBuffer;	
 
 }
+
+int FileIOManager::ReadResourceData(int resourceID, char* textBuffer, int numberOfBytesToRead) {
+
+	if (resourceID >= RSRCID_MAX)	
+		return 0;
+
+	if (resourceID >= RSRCID_FILEBUFFERCONTAINERSBASE) {
+
+		if (resourceID >= RSRCID_FILEPOINTERINFOSBASE)
+			return FilePointerInfoRead(resourceID, textBuffer, numberOfBytesToRead);
+
+		FileBufferContainer* pFileBufferContainer = &FileBufferContainersArray[resourceID - RSRCID_FILEBUFFERCONTAINERSBASE];
+		char* filePointerPosition = pFileBufferContainer->filePointerPosition;
+
+		int distToEndOfBuffer = pFileBufferContainer->textBufferEnd - filePointerPosition + 1;
+		if ( distToEndOfBuffer < numberOfBytesToRead )
+			numberOfBytesToRead = distToEndOfBuffer;
+
+		if (numberOfBytesToRead) {
+			memcpy(textBuffer, filePointerPosition, numberOfBytesToRead);
+			pFileBufferContainer->filePointerPosition += numberOfBytesToRead;
+		}
+
+		return numberOfBytesToRead;
+
+	}
+	
+	FileHandleContainer* pFileHandleContainer = &FileHandleContainersArray[resourceID - 1];
+	if (!pFileHandleContainer->bCanFileBeReadNonsequentially)
+		return RawRead(resourceID-1, textBuffer, numberOfBytesToRead);
+
+	if (!pFileHandleContainer->pFileDataContainer)
+		PopulateFileDataContainer(pFileHandleContainer);
+
+	FileDataContainer* pFileDataContainer = pFileHandleContainer->pFileDataContainer;
+
+	char* textBufferOffset = textBuffer;
+
+	int totalBytesRead = 0;
+	if (numberOfBytesToRead <= 0)
+		return 0;
+
+	int readSize = numberOfBytesToRead;
+	do {
+
+		if (pFileHandleContainer->filePointerPosition.QuadPart >= pFileHandleContainer->fileEndPosition.QuadPart)
+			break;
+
+		if (pFileHandleContainer->filePointerPosition.QuadPart < pFileHandleContainer->someLargeInt2.QuadPart ||
+		pFileHandleContainer->filePointerPosition.QuadPart >= pFileHandleContainer->someLargeInt2.QuadPart + pFileHandleContainer->fileDataLength) {
+
+			if (pFileHandleContainer->filePointerPosition.QuadPart != pFileHandleContainer->someLargeInt1.QuadPart) {
+
+				RawSetFilePointer(
+					pFileHandleContainer->fileHandleIndex,
+					pFileHandleContainer->filePointerPosition,
+					FILE_BEGIN);
+
+				pFileHandleContainer->someLargeInt1 = pFileHandleContainer->filePointerPosition;
+
+			}				
+
+			int bytesRead = RawRead(
+				pFileHandleContainer->fileHandleIndex,
+				pFileDataContainer->dataBuffer,
+				1024);
+
+			pFileHandleContainer->fileDataLength = bytesRead;
+			pFileHandleContainer->someLargeInt2 = pFileHandleContainer->someLargeInt1; 
+			pFileHandleContainer->someLargeInt1.QuadPart += bytesRead;
+
+		}
+
+		readSize = pFileHandleContainer->someLargeInt2.LowPart - pFileHandleContainer->filePointerPosition.LowPart + pFileHandleContainer->fileDataLength;
+		if (readSize > numberOfBytesToRead)
+			readSize = numberOfBytesToRead;
+
+		if (readSize) {
+			int dataOffset = pFileHandleContainer->filePointerPosition.LowPart - pFileHandleContainer->someLargeInt2.LowPart;
+			memcpy(textBufferOffset, &pFileDataContainer->dataBuffer[dataOffset], readSize);
+			textBufferOffset += readSize;
+			totalBytesRead += readSize;
+			pFileHandleContainer->filePointerPosition.QuadPart += readSize;
+			numberOfBytesToRead -= readSize;
+		}
+
+	}
+	while ( numberOfBytesToRead - readSize > 0 );
+	return totalBytesRead;	
+
+}
+
+int FileIOManager::FilePointerInfoRead(int resourceID, char* textBuffer, int numberOfBytesToRead) {
+
+	return 0;
+
+}

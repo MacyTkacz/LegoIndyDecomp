@@ -29,8 +29,9 @@ struct FileHandleContainer {
 	int fileHandleIndex;
 	char pad1[4];
 	LARGE_INTEGER filePointerPosition;
-	char pad2[8];
+	LARGE_INTEGER someLargeInt1;
 	LARGE_INTEGER fileEndPosition;
+	LARGE_INTEGER someLargeInt2;
 	int fileDataLength;
 	int bCanFileBeReadNonsequentially; // if false, always read from FILE_BEGIN (I think?)
 	void* pSomething;
@@ -74,6 +75,8 @@ public:
 	int CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType);
 	bool CloseFileHandle(int fileHandleIndex);
 	void CloseResource(int resourceID);
+	int ReadResourceData(int resourceID, char* textBuffer, int numberOfBytesToRead);
+	int FilePointerInfoRead(int resourceID, char* textBuffer, int numberOfBytesToRead);
 
 	FilePathContainer* GetFilePathContainerFromPath(char* fpath);
 	int FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int someValue);
@@ -95,8 +98,8 @@ public:
 
 	int AdvanceCriticalSection();
 	static inline int		 GetCriticalSectionIndex() { return CriticalSectionIndex; }
-	static CRITICAL_SECTION* FileIOManager::GetCriticalSection(int criticalSectionIndex) { return CriticalSectionsArray[criticalSectionIndex]; }
-	static CRITICAL_SECTION* FileIOManager::GetCriticalSection() { return CriticalSectionsArray[CriticalSectionIndex]; }
+	static CRITICAL_SECTION* GetCriticalSection(int criticalSectionIndex) { return CriticalSectionsArray[criticalSectionIndex]; }
+	static CRITICAL_SECTION* GetCriticalSection() { return CriticalSectionsArray[CriticalSectionIndex]; }
 
 private:
 	// singleton instance
