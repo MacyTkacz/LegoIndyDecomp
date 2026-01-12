@@ -33,7 +33,7 @@ struct FileHandleContainer {
 	LARGE_INTEGER fileEndPosition;
 	LARGE_INTEGER someLargeInt2;
 	int fileDataLength;
-	int bCanFileBeReadNonsequentially; // if false, always read from FILE_BEGIN (I think?)
+	int someProcessingFlag; // if false, always read from FILE_BEGIN (I think?)
 	void* pSomething;
 	char pad3[4];
 	FileAccessType fileAccessType;
@@ -83,6 +83,7 @@ public:
 	int PopulateFileDataContainer(FileHandleContainer* pFileHandleContainer);
 	int GetAvailableFilePointerInfoIndex();
 	int GetResourceBufferSize(int resourceID);
+	int DoesFileHaveFileHandle(char* fname);
 
 	unsigned __int64 CalculateStatusDependentValue(Hashes* pHashesStruct, int base);
 	int InitializeFilePointerContainerFileHandleID(Hashes* pHashesStruct, int filePointerContainerIndex);
@@ -114,7 +115,7 @@ private:
 
 	static inline int FilesReadCounter = 0; // increments when Read is called
 	static inline int FileDataSize = 0;
-	static inline int bCanFileBeReadNonsequentially = 0; // honestly a shot in the dark, don't really know what this is
+	static inline int someProcessingFlag = -1; // is set to 0 during the course of some functions' execution
 	static inline int LatestWriteIndex = 0;
 	static inline int NumberOfCharsWritten = 0;
 	
@@ -125,6 +126,7 @@ private:
 	static inline LARGE_INTEGER SomeLargeInteger{ 0 };
 
 	static inline FilePointerContainer* pSomeFilePointerContainer = 0;
+	static inline Hashes* pSomeHashesStruct = 0;
 
 	static inline std::array<HANDLE, 64> FileHandlesArray{ (HANDLE)-1 };
 	static inline std::array<FileHandleContainer, 32> FileHandleContainersArray{0};

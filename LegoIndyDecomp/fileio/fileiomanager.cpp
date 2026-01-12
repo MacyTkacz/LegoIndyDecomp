@@ -258,7 +258,7 @@ LARGE_INTEGER FileIOManager::SetFilePointer(FileBufferContainer* pFileBufferCont
 
 LARGE_INTEGER FileIOManager::SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, DWORD moveMethod) {
 
-	if (!pFileHandleContainer->bCanFileBeReadNonsequentially)
+	if (!pFileHandleContainer->someProcessingFlag)
 		return RawSetFilePointer(pFileHandleContainer->fileHandleIndex, distToMove, moveMethod);
 
 	switch (moveMethod) {
@@ -436,7 +436,7 @@ int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* 
 		else {
 LABEL_25:
 			if (fileAccessType == FileAccessType::READ)
-				FileHandleContainersArray[fileHandleIndex].bCanFileBeReadNonsequentially = bCanFileBeReadNonsequentially;
+				FileHandleContainersArray[fileHandleIndex].someProcessingFlag = someProcessingFlag;
 		}
 	}
 	FileHandleContainersArray[fileHandleIndex].pSomething = 0;
@@ -635,7 +635,7 @@ int FileIOManager::ReadResourceData(int resourceID, char* textBuffer, int number
 	}
 	
 	FileHandleContainer* pFileHandleContainer = &FileHandleContainersArray[resourceID - 1];
-	if (!pFileHandleContainer->bCanFileBeReadNonsequentially)
+	if (!pFileHandleContainer->someProcessingFlag)
 		return RawRead(resourceID-1, textBuffer, numberOfBytesToRead);
 
 	if (!pFileHandleContainer->pFileDataContainer)
@@ -788,8 +788,29 @@ RETURN:
 
 }
 
-int FileIOManager::LZ2K_UncompressData(char* compressedDataBuffer, char* uncompressedDataOut, int compressedSizeMinusHeader, int uncompressedSize) {
-	return 0;
+int FileIOManager::DoesFileHaveFileHandle(char* fname) {
+
+	if (!fname || !*fname)
+		return 0;
+
+	int someProcessingFlag = FileIOManager::someProcessingFlag;
+	FileIOManager::someProcessingFlag = 0;
+
+	Hashes* pHashesStruct = pSomeHashesStruct;
+	int stringHashIndex = GetFileDataIndex(pHashesStruct, fname);
+
+	if (pHashesStruct && stringHashIndex >= 0) {
+		FileIOManager::someProcessingFlag = someProcessingFlag;
+		return pHashesStruct->SomeStructArray[stringHashIndex].fileDataSize2;
+	}
+	else {
+		int resourceID = SIXB44F0(fname, FileAccessType::READ, pHashesStruct, 1);
+		if (resourceID)
+			CloseResource(resourceID);
+		FileIOManager::someProcessingFlag = someProcessingFlag;	
+		return resourceID != 0;
+	}
+
 }
 
 void FileIOManager::LZ2K_AttemptRawRead() {
@@ -805,4 +826,8 @@ void FileIOManager::LZ2K_AttemptRawRead() {
 
 	pSomeFilePointerContainer->filePointerPosition = pSomeFilePointerInfo->filePointerPosition;
 
+}
+
+int FileIOManager::LZ2K_UncompressData(char* compressedDataBuffer, char* uncompressedDataOut, int compressedSizeMinusHeader, int uncompressedSize) {
+	return 0;
 }
