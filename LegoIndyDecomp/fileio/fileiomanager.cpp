@@ -516,7 +516,7 @@ int FileIOManager::SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fna
 	FilePointerInfoArray[hashesStructIndex].filePointerPosition = fileStart;
 	FilePointerInfoArray[hashesStructIndex].fileDataSize = pHashesStruct->SomeStructArray[someStructIndex].fileDataSize1;
 	FilePointerInfoArray[hashesStructIndex].fileDataSizeWhen0x28isNonzero = pHashesStruct->SomeStructArray[someStructIndex].fileDataSize2;
-	FilePointerInfoArray[hashesStructIndex].bIsRelative = pHashesStruct->SomeStructArray[someStructIndex].bIsRelative;
+	FilePointerInfoArray[hashesStructIndex].fileType = pHashesStruct->SomeStructArray[someStructIndex].fileType;
 	FilePointerInfoArray[hashesStructIndex].filePointerContainerIndex = filePointerContainerIndex;
 	pFilePointerContainer->filePointerPosition = fileStart;
 
@@ -528,11 +528,11 @@ int FileIOManager::SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fna
 			break;
 	}
 
-	if (FilePointerInfoArray[hashesStructIndex].bIsRelative == 2) {
+	if (FilePointerInfoArray[hashesStructIndex].fileType == FileType::LZ2K) {
 		pSomeFilePointerInfo = &FilePointerInfoArray[hashesStructIndex];
 		pSomeFilePointerContainer = pFilePointerContainer;
 		SomeFileStartPosition = pFilePointerInfo->fileStartPosition;
-		FileDataBufferCharsCount = 0;
+		FileDataSize = 0;
 	}
 	return hashesStructIndex + RSRCID_FILEPOINTERINFOSBASE;
 
@@ -594,7 +594,7 @@ int FileIOManager::GetResourceBufferSize(int resourceID) {
 
 	if (resourceID >= RSRCID_FILEPOINTERINFOSBASE) {
 		FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE];
-		if (pFilePointerInfo->bIsRelative)
+		if (pFilePointerInfo->fileType)
 			return pFilePointerInfo->fileDataSizeWhen0x28isNonzero;
 		return pFilePointerInfo->fileDataSize;
 	}
@@ -699,7 +699,96 @@ int FileIOManager::ReadResourceData(int resourceID, char* textBuffer, int number
 
 }
 
-int FileIOManager::FilePointerInfoRead(int resourceID, char* textBuffer, int numberOfBytesToRead) {
+int FileIOManager::FilePointerInfoRead(int resourceID, char* dataBuffer, int numberOfBytesToRead) {
+
+	FilePointerInfo* fpi = &FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE];
+	FilePointerContainer* fpc;
+	{
+		int index = fpi->filePointerContainerIndex;
+		fpc = &fpi->pHashesStruct->filePointerContainersArray[index];
+	}
+
+	if (fpi->fileType == FileType::LZ2K) {
+
+		if (!numberOfBytesToRead)
+			return 0;
+
+		int remainingBytes = numberOfBytesToRead;
+		int bytesRead = 0;
+		char* currentBufferOffset = dataBuffer;
+		int uncompressedFileSize = FileDataSize;
+
+		do {
+
+			if (!uncompressedFileSize) {
+
+				LZ2K_AttemptRawRead();
+				if (LZ2KCompressedFileSizeMinusHeader == LZ2KUncompressedFileSize)
+					memcpy(LZ2KUncompressedDataBuffer,LZ2KCompressedDataBuffer,LZ2KCompressedFileSizeMinusHeader);
+				else
+					LZ2K_UncompressData(
+						LZ2KCompressedDataBuffer,
+						LZ2KUncompressedDataBuffer,
+						LZ2KCompressedFileSizeMinusHeader,
+						LZ2KUncompressedFileSize
+					);
+
+				uncompressedFileSize = LZ2KUncompressedFileSize;
+				NumberOfCharsWritten = 0;
+				
+			}
+
+			int numOfBytesReading = remainingBytes;
+			if (remainingBytes >= uncompressedFileSize)
+				numOfBytesReading = uncompressedFileSize;
+
+			memcpy(currentBufferOffset,&LZ2KUncompressedDataBuffer[NumberOfCharsWritten],numOfBytesReading);
+			NumberOfCharsWritten += numOfBytesReading;
+			bytesRead += numOfBytesReading;
+			uncompressedFileSize -= numOfBytesReading;
+			remainingBytes -= numOfBytesReading;
+			currentBufferOffset += numOfBytesReading;
+			FileDataSize = uncompressedFileSize;
+
+		}
+		while ( remainingBytes );
+
+		return bytesRead;
+
+	}
+
+	if (fpi->filePointerPosition.QuadPart != fpc->filePointerPosition.QuadPart) {
+
+		SetFilePointer(fpc->fileHandleID,fpi->filePointerPosition,FILE_BEGIN);
+		fpc->filePointerPosition = fpi->filePointerPosition;
+
+	}
+
+	int remainingBytes = numberOfBytesToRead;
+
+	__int64 fpiOffsetFromEndOfData = fpi->fileStartPosition.QuadPart + fpi->fileDataSize - fpi->filePointerPosition.QuadPart;
+	if (fpiOffsetFromEndOfData < 0)
+		fpiOffsetFromEndOfData = 0;
+
+	if (numberOfBytesToRead >= fpiOffsetFromEndOfData)	
+		remainingBytes = fpiOffsetFromEndOfData;
+
+	if (!remainingBytes)
+		return 0;
+
+	int bytesRead = ReadResourceData(fpc->fileHandleID, dataBuffer, remainingBytes);
+	if (bytesRead < 0)
+		goto RETURN;	
+
+	fpi->filePointerPosition.QuadPart += bytesRead;
+	fpc->filePointerPosition = fpi->filePointerPosition;
+
+RETURN:
+	return bytesRead;
+
+}
+
+int FileIOManager::LZ2K_UncompressData(char* compressedDataBuffer, char* uncompressedDataOut, int compressedSizeMinusHeader, int uncompressedSize) {
 	return 0;
 }
 

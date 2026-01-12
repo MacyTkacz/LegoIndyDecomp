@@ -9,11 +9,17 @@ struct FilePointerContainer {
 	LARGE_INTEGER filePointerPosition;
 };
 
+enum FileType {
+	TYPE1,
+	TYPE2,
+	LZ2K
+};
+
 struct SomeStruct {
     int someNum;
     int fileDataSize1;
     int fileDataSize2;
-    int bIsRelative;
+    FileType fileType;
 };
 
 #endif // LEGOINDY_FILEIO_TYPES_H

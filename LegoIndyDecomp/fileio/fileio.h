@@ -49,7 +49,7 @@ struct FilePointerInfo {
 	DWORD fileDataSizeWhen0x28isNonzero;
 	int filePointerContainerIndex;
 	DWORD bIsInUse;
-	DWORD bIsRelative;
+	FileType fileType;
 	DWORD dw4;
 };
 
@@ -102,6 +102,7 @@ public:
 	static CRITICAL_SECTION* GetCriticalSection() { return CriticalSectionsArray[CriticalSectionIndex]; }
 
 	void LZ2K_AttemptRawRead();
+	int  LZ2K_UncompressData(char* compressedDataBuffer, char* uncompressedDataOut, int compressedSizeMinusHeader, int uncompressedSize);
 
 private:
 	// singleton instance
@@ -112,9 +113,10 @@ private:
 	static inline int CriticalSectionLockCount = 0;
 
 	static inline int FilesReadCounter = 0; // increments when Read is called
-	static inline int FileDataBufferCharsCount = 0;
+	static inline int FileDataSize = 0;
 	static inline int bCanFileBeReadNonsequentially = 0; // honestly a shot in the dark, don't really know what this is
 	static inline int LatestWriteIndex = 0;
+	static inline int NumberOfCharsWritten = 0;
 	
 	static inline int LZ2KUncompressedFileSize = 0;
 	static inline int LZ2KCompressedFileSizeMinusHeader = 0;
@@ -138,6 +140,7 @@ private:
 	static inline std::array<FilePathContainer, 16> FilePathContainersArray{0};
 
 	static inline char LZ2KCompressedDataBuffer[32768]{0};
+	static inline char LZ2KUncompressedDataBuffer[32768]{0};
 
 	// wrappers for Windows api
 	int RawWrite(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite);
