@@ -1,5 +1,6 @@
 #include "fileio.h"
 #include "strings/std.h"
+#include "strings/lz2k.h"
 #include <utils.h>
 
 // temporary fixes for uninitialized data
@@ -696,7 +697,20 @@ int FileIOManager::ReadResourceData(int resourceID, char* textBuffer, int number
 }
 
 int FileIOManager::FilePointerInfoRead(int resourceID, char* textBuffer, int numberOfBytesToRead) {
-
 	return 0;
+}
+
+void FileIOManager::LZ2K_AttemptRawRead() {
+
+	char fileHeaderBuffer[12];
+	ReadResourceData(pSomeFilePointerContainer->fileHandleID, fileHeaderBuffer, 12);
+
+	LZ2KUncompressedFileSize = LZ2K_DecodeUncompressedFileSize(fileHeaderBuffer);
+	LZ2KCompressedFileSizeMinusHeader = LZ2K_DecodeCompressedFileSize(fileHeaderBuffer) - 12;
+
+	ReadResourceData(pSomeFilePointerContainer->fileHandleID, LZ2KCompressedDataBuffer, LZ2KCompressedFileSizeMinusHeader);
+	pSomeFilePointerInfo->filePointerPosition.QuadPart += LZ2KCompressedFileSizeMinusHeader + 12;
+
+	pSomeFilePointerContainer->filePointerPosition = pSomeFilePointerInfo->filePointerPosition;
 
 }

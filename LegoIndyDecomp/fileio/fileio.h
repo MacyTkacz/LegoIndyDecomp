@@ -101,6 +101,8 @@ public:
 	static CRITICAL_SECTION* GetCriticalSection(int criticalSectionIndex) { return CriticalSectionsArray[criticalSectionIndex]; }
 	static CRITICAL_SECTION* GetCriticalSection() { return CriticalSectionsArray[CriticalSectionIndex]; }
 
+	void LZ2K_AttemptRawRead();
+
 private:
 	// singleton instance
 	static inline FileIOManager* _instance = 0;
@@ -113,6 +115,9 @@ private:
 	static inline int FileDataBufferCharsCount = 0;
 	static inline int bCanFileBeReadNonsequentially = 0; // honestly a shot in the dark, don't really know what this is
 	static inline int LatestWriteIndex = 0;
+	
+	static inline int LZ2KUncompressedFileSize = 0;
+	static inline int LZ2KCompressedFileSizeMinusHeader = 0;
 
 	static inline LARGE_INTEGER SomeFileStartPosition{ 0 };
 	static inline LARGE_INTEGER SomeLargeInteger{ 0 };
@@ -132,6 +137,7 @@ private:
 	static inline int FilePathContainersCount = 0;
 	static inline std::array<FilePathContainer, 16> FilePathContainersArray{0};
 
+	static inline char LZ2KCompressedDataBuffer[32768]{0};
 
 	// wrappers for Windows api
 	int RawWrite(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite);
