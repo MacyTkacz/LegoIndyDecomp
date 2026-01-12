@@ -387,8 +387,11 @@ int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* 
 	FilePathContainer* pFilePathContainer = GetFilePathContainerFromPath(fpath);
 	if (!pFilePathContainer ) {
 
-		if (pHashesStruct && fileAccessType != CREATE && fileAccessType != MODIFY)
-			return 0; // TODO: finish another function and complete
+		if (pHashesStruct && fileAccessType != CREATE && fileAccessType != MODIFY) {
+			int resourceID = SomeLargeFileReadingFunction(pHashesStruct, fpath, fileAccessType);
+			if (resourceID)
+				return resourceID;
+		}
 
 		pFilePathContainer = &DefaultFilePathContainer;
 
