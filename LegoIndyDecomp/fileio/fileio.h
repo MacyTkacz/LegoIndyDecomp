@@ -17,6 +17,7 @@ constexpr int RSRCID_MAX					  = (1<<12);
 // ===================== STRUCTS =====================
 
 enum FileAccessType { READ, CREATE, MODIFY, OTHER };
+enum FileReadErrorCode { HANDLE_CREATION_FAILED_1 = -3, HANDLE_CREATION_FAILED_2, OVERFLOW, NONE };
 
 struct FileHandleContainer;
 struct FileDataContainer {
@@ -46,7 +47,7 @@ struct FilePointerInfo {
 	LARGE_INTEGER fileStartPosition;
 	LARGE_INTEGER filePointerPosition;
 	DWORD fileDataSize;
-	DWORD fileDataSizeWhen0x28isNonzero;
+	DWORD fileDataSizeWhenFileTypeIsNonzero;
 	int filePointerContainerIndex;
 	DWORD bIsInUse;
 	FileType fileType;
@@ -90,6 +91,7 @@ public:
 	int SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fname, FileAccessType fileAccessType);
 
 	int SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* pHashesStruct, int a4);
+	int SIXB59E0(Hashes* pHashesStruct, char* fname, char* dataBuffer, int maxDataSize);
 	int AssertValidStructLinkage(int resourceID);
 
 	LARGE_INTEGER SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod);
@@ -116,6 +118,7 @@ private:
 	static inline int FilesReadCounter = 0; // increments when Read is called
 	static inline int FileDataSize = 0;
 	static inline int someProcessingFlag = -1; // is set to 0 during the course of some functions' execution
+	static inline FileReadErrorCode fileReadErrorCode = FileReadErrorCode::NONE;
 	static inline int LatestWriteIndex = 0;
 	static inline int NumberOfCharsWritten = 0;
 	

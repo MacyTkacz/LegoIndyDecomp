@@ -486,6 +486,7 @@ int FileIOManager::InitializeFilePointerContainerFileHandleID(Hashes* pHashesStr
 
 }
 
+// initializes and returns a FilePointerInfo
 int FileIOManager::SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fname, FileAccessType fileAccessType) {
 
 	// return if not READ
@@ -515,7 +516,7 @@ int FileIOManager::SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fna
 	FilePointerInfoArray[hashesStructIndex].fileStartPosition = fileStart;
 	FilePointerInfoArray[hashesStructIndex].filePointerPosition = fileStart;
 	FilePointerInfoArray[hashesStructIndex].fileDataSize = pHashesStruct->SomeStructArray[someStructIndex].fileDataSize1;
-	FilePointerInfoArray[hashesStructIndex].fileDataSizeWhen0x28isNonzero = pHashesStruct->SomeStructArray[someStructIndex].fileDataSize2;
+	FilePointerInfoArray[hashesStructIndex].fileDataSizeWhenFileTypeIsNonzero = pHashesStruct->SomeStructArray[someStructIndex].fileDataSize2;
 	FilePointerInfoArray[hashesStructIndex].fileType = pHashesStruct->SomeStructArray[someStructIndex].fileType;
 	FilePointerInfoArray[hashesStructIndex].filePointerContainerIndex = filePointerContainerIndex;
 	pFilePointerContainer->filePointerPosition = fileStart;
@@ -595,7 +596,7 @@ int FileIOManager::GetResourceBufferSize(int resourceID) {
 	if (resourceID >= RSRCID_FILEPOINTERINFOSBASE) {
 		FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE];
 		if (pFilePointerInfo->fileType)
-			return pFilePointerInfo->fileDataSizeWhen0x28isNonzero;
+			return pFilePointerInfo->fileDataSizeWhenFileTypeIsNonzero;
 		return pFilePointerInfo->fileDataSize;
 	}
 
@@ -810,6 +811,80 @@ int FileIOManager::DoesFileHaveFileHandle(char* fname) {
 		FileIOManager::someProcessingFlag = someProcessingFlag;	
 		return resourceID != 0;
 	}
+
+}
+
+// reads data and updates filePointerPosition for FilePointerInfo and FilePointerContainer
+int FileIOManager::SIXB59E0(Hashes* pHashesStruct, char* fname, char* dataBuffer, int maxDataSize) {
+
+	int dataSize = 0;
+
+	int resourceID = SomeLargeFileReadingFunction(pHashesStruct, fname, FileAccessType::READ);
+	if (!resourceID)
+		return 0;
+
+	if (pHashesStruct->fileAccessType == FileAccessType::OTHER)
+		while ( AssertValidStructLinkage(resourceID) );
+
+
+	FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE];
+	if (pFilePointerInfo->fileType)
+		dataSize = pFilePointerInfo->fileDataSizeWhenFileTypeIsNonzero;
+	else
+		dataSize = pFilePointerInfo->fileDataSize;
+
+	if (!dataSize) {
+		fileReadErrorCode = dataSize > maxDataSize ? FileReadErrorCode::OVERFLOW : FileReadErrorCode::NONE;
+		CloseResource(resourceID);
+		return 0;
+	}
+
+	int filePointerContainerIndex = pFilePointerInfo->filePointerContainerIndex;
+	FilePointerContainer* pFilePointerContainer = &pFilePointerInfo->pHashesStruct->filePointerContainersArray[filePointerContainerIndex];
+	resourceID = pFilePointerContainer->fileHandleID;
+	__int64 fileStartPosition = pFilePointerInfo->fileStartPosition.QuadPart;
+
+	while ( pFilePointerInfo->filePointerPosition.QuadPart < 0 || FilePointerInfoRead(resourceID,dataBuffer,dataSize) < 0 ) {
+
+		// there's definitely a better way to do this without all these repated conditionals
+		// but we're moving on
+		if (resourceID < RSRCID_MAX) {
+
+			if (resourceID < RSRCID_FILEBUFFERCONTAINERSBASE) {
+				int index = resourceID - 1;
+				FileHandleContainer* pFileHandleContainer = &FileHandleContainersArray[index];
+				if (pFileHandleContainer->someProcessingFlag) {
+					pFileHandleContainer->filePointerPosition.QuadPart = fileStartPosition;
+				}
+				else {
+					// i don't really get it but i think this is correct?
+					pFileHandleContainer->filePointerPosition = RawSetFilePointer(index,ToLargeInt(fileStartPosition),FILE_BEGIN);
+				}
+			}
+			else if ( resourceID < RSRCID_FILEPOINTERINFOSBASE ) {
+				char* buff = FileBufferContainersArray[resourceID - 1].textBuffer;
+				FileBufferContainer* pFileBufferContainer = &FileBufferContainersArray[resourceID - 1];
+				pFileBufferContainer->filePointerPosition = fileStartPosition + buff; 
+			}
+			else {
+				fileStartPosition = SetFilePointer(pFilePointerInfo,ToLargeInt(fileStartPosition),FILE_BEGIN).QuadPart;
+			}
+
+		}
+		else {
+			fileStartPosition = 0;
+		}
+
+		pFilePointerInfo->filePointerPosition.QuadPart = fileStartPosition;
+		pFilePointerContainer->filePointerPosition.QuadPart = fileStartPosition;
+
+	}
+
+	if (pHashesStruct->fileAccessType == FileAccessType::OTHER)
+		while (AssertValidStructLinkage(resourceID));
+
+	CloseResource(resourceID);
+	return dataSize;
 
 }
 
