@@ -18,12 +18,12 @@ FileIOManager* FileIOManager::Instance() {
 }
 
 int FileIOManager::AdvanceCriticalSection() {
-	if (CriticalSectionIndex > 12)
+	if (CurrentCriticalSectionIndex > 12)
 		return 0;
-	CriticalSectionIndex++;
-	InitializeCriticalSection(CriticalSectionsArray[CriticalSectionIndex]);
-	CriticalSectionLockCount = CriticalSectionsArray[CriticalSectionIndex]->LockCount;
-	return CriticalSectionIndex;
+	CurrentCriticalSectionIndex++;
+	InitializeCriticalSection(CriticalSectionsArray[CurrentCriticalSectionIndex]);
+	CriticalSectionLockCount = CriticalSectionsArray[CurrentCriticalSectionIndex]->LockCount;
+	return CurrentCriticalSectionIndex;
 }
 
 int FileIOManager::CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType) {
@@ -52,10 +52,10 @@ int FileIOManager::CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType)
 
 ACCESS_TYPE_INITIALIZED:
 
-	if (CriticalSectionIndex == -1)
-		CriticalSectionIndex = AdvanceCriticalSection();
-	if (CriticalSectionIndex - 1 <= 11)
-		EnterCriticalSection(CriticalSectionsArray[CriticalSectionIndex]);
+	if (CriticalSectionIndex_CreateFileHandle == -1)
+		CriticalSectionIndex_CreateFileHandle = AdvanceCriticalSection();
+	if (CriticalSectionIndex_CreateFileHandle - 1 <= 11)
+		EnterCriticalSection(CriticalSectionsArray[CriticalSectionIndex_CreateFileHandle]);
 
 	int currentFileHandleIndex = 0;
 	while (FileHandlesArray[currentFileHandleIndex] != (HANDLE)-1) {
@@ -69,8 +69,8 @@ ACCESS_TYPE_INITIALIZED:
 FILE_HANDLES_ARRAY_FULL:
 
 	FileHandlesArray[fileHandleIndex] = CreateFileA(fpath, dwDesiredAccess, 1, 0, dwCreationDisposition, 0, 0);
-	if (CriticalSectionIndex - 1 <= 11)
-		LeaveCriticalSection(CriticalSectionsArray[CriticalSectionIndex]);
+	if (CriticalSectionIndex_CreateFileHandle - 1 <= 11)
+		LeaveCriticalSection(CriticalSectionsArray[CriticalSectionIndex_CreateFileHandle]);
 	if (FileHandlesArray[fileHandleIndex] == (HANDLE)-1)
 		return -1;
 
@@ -117,6 +117,7 @@ void FileIOManager::CloseResource(int resourceID) {
 
 }
 
+// calls win32 WriteFile and returns number of bytes written
 int FileIOManager::RawWrite(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite) {
 
 	HANDLE hFile = FileHandlesArray[fileHandleIndex];
@@ -126,6 +127,7 @@ int FileIOManager::RawWrite(int fileHandleIndex, LPVOID lpBuffer, int numberOfBy
 
 }
 
+// calls win32 ReadFile and returns number of bytes read
 int FileIOManager::RawRead(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToRead) {
 
 	HANDLE hFile = FileHandlesArray[fileHandleIndex];
@@ -183,6 +185,7 @@ int FileIOManager::Read(FileHandleContainer* pFileHandleContainer) {
 
 }
 
+// calls win32 SetFilePointerEx on a file HANDLE from FileHandlesArray
 LARGE_INTEGER FileIOManager::RawSetFilePointer(int fileHandleIndex, LARGE_INTEGER distToMove, int moveMethod) {
 
 	LARGE_INTEGER newFilePointer;
@@ -294,19 +297,19 @@ LARGE_INTEGER FileIOManager::SetFilePointer(int resourceID, LARGE_INTEGER distTo
 
 }
 
+// attempts to find a FileBufferContainer from FileBufferContainersArray which is not in use
+// if found, marks it as in-use and sets it default values
 int FileIOManager::FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int bSomeBool) {
 
 	if (bufferSize <= 0 || bSomeBool > 1)
 		return 0;
 
-	auto fileBufferContainersArray = Instance()->FileBufferContainersArray;
-	
 	int i;
-	for (i = 0; fileBufferContainersArray[i].bIsInUse; i++) {
+	for (i = 0; FileBufferContainersArray[i].bIsInUse; i++) {
 		if (i == FileBufferContainersArray.size()) return 0;
 	}
 
-	FileBufferContainer* pFileBufferContainer = &fileBufferContainersArray[i];
+	FileBufferContainer* pFileBufferContainer = &FileBufferContainersArray[i];
 
 	pFileBufferContainer->textBufferEnd = &buffer[bufferSize - 1];
 	pFileBufferContainer->bSomeBool = bSomeBool;
@@ -318,6 +321,7 @@ int FileIOManager::FormatAvailableFileBufferContainer(char* buffer, int bufferSi
 
 }
 
+// calls win32 EnterCriticalSection on an object in the CriticalSectionsArray
 void RawEnterCriticalSection(int criticalSectionIndex) {
 
 	FileIOManager* fiom = FileIOManager::Instance();
@@ -331,6 +335,7 @@ void RawEnterCriticalSection(int criticalSectionIndex) {
 
 }
 
+// calls win32 LeaveCriticalSection on an object in the CriticalSectionsArray
 void RawLeaveCriticalSection(int criticalSectionIndex) {
 
 	FileIOManager* fiom = FileIOManager::Instance();
@@ -344,6 +349,7 @@ void RawLeaveCriticalSection(int criticalSectionIndex) {
 
 }
 
+// attempts to match an absolute path with that of a FilePathContainer from FilePathContainersArray
 FilePathContainer* FileIOManager::GetFilePathContainerFromPath(char* fpath) {
 
 	int currentCharIndex = 0;
@@ -444,11 +450,12 @@ LABEL_25:
 
 }
 
+// mark a FilePointerInfo from FilePointerInfoArray as in-use and return its index
 int FileIOManager::GetAvailableFilePointerInfoIndex() {
 
 	int availableIndex = -1;
 
-	RawEnterCriticalSection(CriticalSectionIndex);
+	RawEnterCriticalSection(CriticalSectionIndex_ResourceIndexing);
 	for (int i = 0; i < FilePointerInfoArray.size(); i++) {
 		FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[i];
 		if (!pFilePointerInfo->bIsInUse) {
@@ -458,7 +465,7 @@ int FileIOManager::GetAvailableFilePointerInfoIndex() {
 	}
 	if (availableIndex != -1)
 		FilePointerInfoArray[availableIndex].bIsInUse = 1;
-	RawLeaveCriticalSection(CriticalSectionIndex);
+	RawLeaveCriticalSection(CriticalSectionIndex_ResourceIndexing);
 	return availableIndex;
 
 }
@@ -497,49 +504,51 @@ int FileIOManager::SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fna
 	if (someStructIndex < 0 || !pHashesStruct->SomeStructArray[someStructIndex].fileDataSize1)
 		return 0;
 
-	int hashesStructIndex = GetAvailableFilePointerInfoIndex();
-	if (hashesStructIndex == -1)
+	int filePointerInfoIndex = GetAvailableFilePointerInfoIndex();
+	if (filePointerInfoIndex == -1)
 		return 0;
 
-	int filePointerContainerIndex = pHashesStruct->LinkAvailableFilePointerContainer(hashesStructIndex);
+	int filePointerContainerIndex = pHashesStruct->LinkAvailableFilePointerContainer(filePointerInfoIndex);
 	if (filePointerContainerIndex == -1) {
-		FilePointerInfoArray[hashesStructIndex].bIsInUse = 0;
+		FilePointerInfoArray[filePointerInfoIndex].bIsInUse = 0;
 		return 0;
 	}
 
+	FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[filePointerInfoIndex];
 	FilePointerContainer* pFilePointerContainer = &pHashesStruct->filePointerContainersArray[filePointerContainerIndex];
+
 	InitializeFilePointerContainerFileHandleID(pHashesStruct, filePointerContainerIndex);
-	FilePointerInfoArray[hashesStructIndex].pHashesStruct = pHashesStruct;
-	FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[hashesStructIndex];
+	pFilePointerInfo->pHashesStruct = pHashesStruct;
+
 	LARGE_INTEGER fileStart = ToLargeInt(CalculateStatusDependentValue(pHashesStruct, pHashesStruct->SomeStructArray[someStructIndex].someNum));
 	
-	FilePointerInfoArray[hashesStructIndex].fileStartPosition = fileStart;
-	FilePointerInfoArray[hashesStructIndex].filePointerPosition = fileStart;
-	FilePointerInfoArray[hashesStructIndex].fileDataSize = pHashesStruct->SomeStructArray[someStructIndex].fileDataSize1;
-	FilePointerInfoArray[hashesStructIndex].fileDataSizeWhenFileTypeIsNonzero = pHashesStruct->SomeStructArray[someStructIndex].fileDataSize2;
-	FilePointerInfoArray[hashesStructIndex].fileType = pHashesStruct->SomeStructArray[someStructIndex].fileType;
-	FilePointerInfoArray[hashesStructIndex].filePointerContainerIndex = filePointerContainerIndex;
+	pFilePointerInfo->fileStartPosition = fileStart;
+	pFilePointerInfo->filePointerPosition = fileStart;
+	pFilePointerInfo->fileDataSize = pHashesStruct->SomeStructArray[someStructIndex].fileDataSize1;
+	pFilePointerInfo->fileDataSizeWhenFileTypeIsNonzero = pHashesStruct->SomeStructArray[someStructIndex].fileDataSize2;
+	pFilePointerInfo->fileType = pHashesStruct->SomeStructArray[someStructIndex].fileType;
+	pFilePointerInfo->filePointerContainerIndex = filePointerContainerIndex;
 	pFilePointerContainer->filePointerPosition = fileStart;
 
 	LARGE_INTEGER distToMove;
 
 	while (true) {
-		distToMove = FilePointerInfoArray[hashesStructIndex].fileStartPosition;
+		distToMove = pFilePointerInfo->fileStartPosition;
 		if ((SetFilePointer(pFilePointerContainer->fileHandleID, distToMove, FILE_BEGIN).HighPart & GENERIC_READ) == 0LL)
 			break;
 	}
 
-	if (FilePointerInfoArray[hashesStructIndex].fileType == FileType::LZ2K) {
-		pSomeFilePointerInfo = &FilePointerInfoArray[hashesStructIndex];
+	if (pFilePointerInfo->fileType == FileType::LZ2K) {
+		pSomeFilePointerInfo = pFilePointerInfo;
 		pSomeFilePointerContainer = pFilePointerContainer;
 		SomeFileStartPosition = pFilePointerInfo->fileStartPosition;
 		FileDataSize = 0;
 	}
-	return hashesStructIndex + RSRCID_FILEPOINTERINFOSBASE;
+	return filePointerInfoIndex + RSRCID_FILEPOINTERINFOSBASE;
 
 }
 
-// chooses one of four global "FileDataContainer"s and reads in file data
+// attempts to link FileHandleContainer to a global FileDataContainer and read in file data
 int FileIOManager::PopulateFileDataContainer(FileHandleContainer* pFileHandleContainer) {
 
 	int latestWriteIndex = LatestWriteIndex;

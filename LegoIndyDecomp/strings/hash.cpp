@@ -163,6 +163,7 @@ VALIDATE_hashIndex:
 
 }
 
+// attempts to set the fileHandleIndex of one of 8 available FilePointerContainers from FilePointerContainersArray
 int Hashes::LinkAvailableFilePointerContainer(int hashesStructIndex) {
 
 	FileIOManager* fiom = FileIOManager::Instance();

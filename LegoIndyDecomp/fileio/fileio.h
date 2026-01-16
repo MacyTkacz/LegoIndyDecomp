@@ -100,9 +100,9 @@ public:
 	LARGE_INTEGER SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, DWORD moveMethod);
 
 	int AdvanceCriticalSection();
-	static inline int		 GetCriticalSectionIndex() { return CriticalSectionIndex; }
+	static inline int		 GetCriticalSectionIndex() { return CurrentCriticalSectionIndex; }
 	static CRITICAL_SECTION* GetCriticalSection(int criticalSectionIndex) { return CriticalSectionsArray[criticalSectionIndex]; }
-	static CRITICAL_SECTION* GetCriticalSection() { return CriticalSectionsArray[CriticalSectionIndex]; }
+	static CRITICAL_SECTION* GetCurrentCriticalSection() { return CriticalSectionsArray[CurrentCriticalSectionIndex]; }
 
 	void LZ2K_AttemptRawRead();
 	int  LZ2K_UncompressData(char* compressedDataBuffer, char* uncompressedDataOut, int compressedSizeMinusHeader, int uncompressedSize);
@@ -112,8 +112,11 @@ private:
 	static inline FileIOManager* _instance = 0;
 
 	static inline std::array<CRITICAL_SECTION*, 14> CriticalSectionsArray{ 0 };
-	static inline int CriticalSectionIndex = -1;
 	static inline int CriticalSectionLockCount = 0;
+
+	static inline int CurrentCriticalSectionIndex = -1; // is cycled and returned from AdvanceCriticalSection()
+	static inline int CriticalSectionIndex_CreateFileHandle = -1;  
+	static inline int CriticalSectionIndex_ResourceIndexing = -1;
 
 	static inline int FilesReadCounter = 0; // increments when Read is called
 	static inline int FileDataSize = 0;
