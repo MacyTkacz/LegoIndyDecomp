@@ -17,6 +17,8 @@ FileIOManager* FileIOManager::Instance() {
 	return _instance;
 }
 
+// if within a valid range, increments CurrentCriticalSectionIndex and calls win32 InitializeCriticalSection
+// updates CriticalSectionLockCount
 int FileIOManager::AdvanceCriticalSection() {
 	if (CurrentCriticalSectionIndex > 12)
 		return 0;
@@ -86,6 +88,7 @@ bool FileIOManager::CloseFileHandle(int fileHandleIndex) {
 
 }
 
+// reverts a resource to its freed state (not in-use)
 void FileIOManager::CloseResource(int resourceID) {
 
 	// outside of valid ID range
