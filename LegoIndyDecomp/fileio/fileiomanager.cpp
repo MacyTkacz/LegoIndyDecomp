@@ -94,13 +94,20 @@ void FileIOManager::CloseResource(int resourceID) {
 
 	if (resourceID >= RSRCID_FILEBUFFERCONTAINERSBASE) {
 
-		// close FilePointerInfo
-		if (resourceID >= RSRCID_FILEPOINTERINFOSBASE)
-			return; // NOT YET IMPLEMENTED
-
 		// close FileBufferContainer
-		*(&FileBufferContainersArray[resourceID-RSRCID_FILEBUFFERCONTAINERSBASE].bIsInUse) = 0;
+		if (resourceID < RSRCID_FILEPOINTERINFOSBASE) {
+			FileBufferContainersArray[resourceID - RSRCID_FILEBUFFERCONTAINERSBASE].bIsInUse = 0;
+			return;
+		}
+
+		// close FilePointerInfo
+		FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE];
+		int filePointerContainerIndex = pFilePointerInfo->filePointerContainerIndex;
+		if (filePointerContainerIndex >= 0)
+			pFilePointerInfo->pHashesStruct->filePointerContainersArray[filePointerContainerIndex].fileHandleIndex = -1;
+		pFilePointerInfo->bIsInUse = 0;
 		return;
+
 	}
 
 	// close FileHandleContainer
