@@ -26,6 +26,7 @@ struct FileDataContainer {
 	char dataBuffer[1024];
 };
 
+// for reading raw file data from a file HANDLE, most basic of the resource types
 struct FileHandleContainer {
 	int fileHandleIndex;
 	char pad1[4];
@@ -41,6 +42,7 @@ struct FileHandleContainer {
 	FileDataContainer* pFileDataContainer;
 };
 
+// for reading files compressed in some way
 struct FilePointerInfo {
 	Hashes* pHashesStruct;
 	DWORD dw1;
@@ -56,6 +58,7 @@ struct FilePointerInfo {
 
 // ===================== CLASSES =====================
 
+// for reading wide char file data
 class FileBufferContainer {
 public:
 	char* textBuffer; // 0x0
@@ -70,6 +73,8 @@ class FileIOManager {
 public:
 	FileIOManager();
 	static FileIOManager* Instance();
+
+	int TopLevelFileReadingFunction(char* fname, char* textBuffer, int maxDataSize);
 
 	// reads file data into an available FileDataContainer
 	int Read(FileHandleContainer* pFileHandleContainer);
@@ -92,6 +97,7 @@ public:
 
 	int SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* pHashesStruct, int a4);
 	int SIXB59E0(Hashes* pHashesStruct, char* fname, char* dataBuffer, int maxDataSize);
+
 	int AssertValidStructLinkage(int resourceID);
 
 	LARGE_INTEGER SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod);

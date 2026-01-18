@@ -907,6 +907,24 @@ int FileIOManager::SIXB59E0(Hashes* pHashesStruct, char* fname, char* dataBuffer
 
 }
 
+int FileIOManager::TopLevelFileReadingFunction(char* fname, char* textBuffer, int maxDataSize) {
+
+	int result = 0;
+	fileReadErrorCode = FileReadErrorCode::NONE;
+
+	if (pSomeHashesStruct) {
+		if ( result = SIXB59E0(pSomeHashesStruct,fname,textBuffer,maxDataSize), result )
+			return result;
+	}
+
+	fileReadErrorCode = FileReadErrorCode::HANDLE_CREATION_FAILED_2;
+	return result;
+
+	// there is a lot more to this function, but in testing it never goes past here
+	// so I'll omit it for now
+
+}
+
 void FileIOManager::LZ2K_AttemptRawRead() {
 
 	char fileHeaderBuffer[12];
