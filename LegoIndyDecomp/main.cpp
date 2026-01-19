@@ -6,33 +6,30 @@ int main() {
 
 	HEAP_INIT(16);
 
-	FileIOManager* fiom = FileIOManager::Instance();
-	if (!fiom)
-		return 1;
+	// FileIOManager* fiom = FileIOManager::Instance();
+	// if (!fiom)
+	// 	return 1;
 
-	char* path = (char*)GetOnHeap<char[64]>();
-	strncpy(path, "/shaders",64);
-	HEAP_HOOK(path);
+	// char* textBuffer = (char*)GetOnHeap<char[1024]>();
+	// HEAP_HOOK(textBuffer);
 
-	char* dir1 = (char*)GetOnHeap<char[64]>();
-	strncpy(dir1,"", 64);
-	HEAP_HOOK(dir1);
+	// char* fname = (char*)GetOnHeap<char[64]>();
+	// strncpy(fname,"C:/Users/thoma/OneDrive/Desktop/shaders.h",64);
+	// HEAP_HOOK(fname);
 
-	Hash* pHashArray = (Hash*)GetOnHeap<Hash[2]>();
-	pHashArray[0].str = dir1;
-	pHashArray[0].nextOnMatch = 1;
-	pHashArray[1].str = dir1;
-	pHashArray[1].nextOnMatch = -1;
-	HEAP_HOOK(pHashArray);
+	// char* pairsbuff = (char*)GetOnHeap<char[64]>();
+	// strncpy(pairsbuff,"C:\\Users\\thoma\\OneDrive\\Desktop\\shaders.h\x00\x00\x01",64);
+	// HEAP_HOOK(pairsbuff);
 
-	Hashes* pHashesStruct = (Hashes*)GetOnHeap<Hashes>();
-	pHashesStruct->hashArray = nullptr;
-	pHashesStruct->numOfStringHashIndexPairs = 1;
-	HEAP_HOOK(pHashesStruct);
+	// Hashes* pHashesStruct = (Hashes*)GetOnHeap<Hashes>();
+	// memset(pHashesStruct,0,sizeof(Hashes));
+	// pHashesStruct->numOfStringHashIndexPairs = 1;
+	// pHashesStruct->stringHashIndexPairsBuffer = pairsbuff;
+	// HEAP_HOOK(pHashesStruct);
 
-	fiom->SomeLargeFileReadingFunction(pHashesStruct, path, FileAccessType::READ);
+	// fiom->SetHashesStruct(pHashesStruct);
 
-	std::cout << "hello world!" << std::endl;
+	// std::cout << fiom->TopLevelFileReadingFunction(fname,textBuffer,1024) << std::endl;
 
 	HEAP_FREE();
 	return 0;
