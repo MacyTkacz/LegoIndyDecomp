@@ -2,6 +2,7 @@
 #define LEGOINDY_FILEIO_TYPES_H
 
 #include <Windows.h>
+#include <strings/types.h>
 
 struct FilePointerContainer {
 	int fileHandleID;
@@ -17,8 +18,7 @@ enum FileType {
 
 struct SomeStruct {
     int someNum;
-    int fileDataSize1;
-    int fileDataSize2;
+	Hash hash;
     FileType fileType;
 };
 

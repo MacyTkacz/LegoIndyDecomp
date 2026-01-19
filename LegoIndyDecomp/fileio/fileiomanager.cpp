@@ -511,7 +511,7 @@ int FileIOManager::SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fna
 		return 0;
 
 	int someStructIndex = GetFileDataIndex(pHashesStruct, fname);
-	if (someStructIndex < 0 || !pHashesStruct->SomeStructArray[someStructIndex].fileDataSize1)
+	if (someStructIndex < 0 || !pHashesStruct->SomeStructArray[someStructIndex].hash.nextOnMatch)
 		return 0;
 
 	int filePointerInfoIndex = GetAvailableFilePointerInfoIndex();
@@ -534,8 +534,8 @@ int FileIOManager::SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fna
 	
 	pFilePointerInfo->fileStartPosition = fileStart;
 	pFilePointerInfo->filePointerPosition = fileStart;
-	pFilePointerInfo->fileDataSize = pHashesStruct->SomeStructArray[someStructIndex].fileDataSize1;
-	pFilePointerInfo->fileDataSizeWhenFileTypeIsNonzero = pHashesStruct->SomeStructArray[someStructIndex].fileDataSize2;
+	pFilePointerInfo->fileDataSize = pHashesStruct->SomeStructArray[someStructIndex].hash.nextOnMatch;
+	pFilePointerInfo->fileDataSizeWhenFileTypeIsNonzero = pHashesStruct->SomeStructArray[someStructIndex].hash.nextOnNonmatch;
 	pFilePointerInfo->fileType = pHashesStruct->SomeStructArray[someStructIndex].fileType;
 	pFilePointerInfo->filePointerContainerIndex = filePointerContainerIndex;
 	pFilePointerContainer->filePointerPosition = fileStart;
@@ -821,7 +821,7 @@ int FileIOManager::DoesFileHaveFileHandle(char* fname) {
 
 	if (pHashesStruct && stringHashIndex >= 0) {
 		FileIOManager::someProcessingFlag = someProcessingFlag;
-		return pHashesStruct->SomeStructArray[stringHashIndex].fileDataSize2;
+		return pHashesStruct->SomeStructArray[stringHashIndex].hash.nextOnNonmatch;
 	}
 	else {
 		int resourceID = SIXB44F0(fname, FileAccessType::READ, pHashesStruct, 1);
@@ -922,6 +922,12 @@ int FileIOManager::TopLevelFileReadingFunction(char* fname, char* textBuffer, in
 
 	// there is a lot more to this function, but in testing it never goes past here
 	// so I'll omit it for now
+
+}
+
+Hashes* InitializeHashesStruct(char* fpath, void** pHashesStructAddress, size_t* pSize_out, FileAccessType fileAccessType) {
+
+	return reinterpret_cast<Hashes*>(0);
 
 }
 

@@ -93,6 +93,7 @@ public:
 
 	unsigned __int64 CalculateStatusDependentValue(Hashes* pHashesStruct, int base);
 	int InitializeFilePointerContainerFileHandleID(Hashes* pHashesStruct, int filePointerContainerIndex);
+	Hashes* InitializeHashesStruct(char* fpath, void** pHashesStructAddress, size_t *pSize_out, FileAccessType fileAccessType);
 	int SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fname, FileAccessType fileAccessType);
 
 	int SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* pHashesStruct, int a4);
@@ -109,6 +110,8 @@ public:
 	static inline int		 GetCriticalSectionIndex() { return CurrentCriticalSectionIndex; }
 	static CRITICAL_SECTION* GetCriticalSection(int criticalSectionIndex) { return CriticalSectionsArray[criticalSectionIndex]; }
 	static CRITICAL_SECTION* GetCurrentCriticalSection() { return CriticalSectionsArray[CurrentCriticalSectionIndex]; }
+
+	static inline void SetHashesStruct(Hashes* pHashesStruct) { pSomeHashesStruct = pHashesStruct; }
 
 	void LZ2K_AttemptRawRead();
 	int  LZ2K_UncompressData(char* compressedDataBuffer, char* uncompressedDataOut, int compressedSizeMinusHeader, int uncompressedSize);

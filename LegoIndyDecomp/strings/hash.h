@@ -1,15 +1,10 @@
 #ifndef LEGOINDY_HASH_H
 #define LEGOINDY_HASH_H
 
+#include "types.h"
 #include <fileio/types.h>
 
 // ===================== STRUCTS =====================
-
-struct Hash {
-	__int16 nextOnMatch;
-	__int16 nextOnNonmatch;
-	char* str;
-};
 
 class Hashes {
 public:
