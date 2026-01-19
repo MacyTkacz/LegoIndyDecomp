@@ -12,7 +12,7 @@ public:
     int LinkAvailableFilePointerContainer(int hashesStructIndex);
 
     int status;
-    int someIndex;
+    int SomeStructIndex;
     SomeStruct *SomeStructArray;
     char pad1[4];
     Hash *hashArray;

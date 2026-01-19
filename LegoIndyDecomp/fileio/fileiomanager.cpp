@@ -925,9 +925,30 @@ int FileIOManager::TopLevelFileReadingFunction(char* fname, char* textBuffer, in
 
 }
 
-Hashes* InitializeHashesStruct(char* fpath, void** pHashesStructAddress, size_t* pSize_out, FileAccessType fileAccessType) {
+Hashes* FileIOManager::InitializeHashesStruct(char* fpath, void** pHashesStructAddress, size_t* pSize_out, FileAccessType fileAccessType) {
 
-	return reinterpret_cast<Hashes*>(0);
+	int resourceID = SIXB44F0(fpath, fileAccessType, 0, 0);
+	if (!resourceID)
+		return 0;
+
+	int someProcessingFlag = FileIOManager::someProcessingFlag;
+
+	if (fileAccessType == FileAccessType::OTHER)
+		while (AssertValidStructLinkage(resourceID));
+
+	if (SomeLargeInteger.QuadPart)
+		SetFilePointer(resourceID, SomeLargeInteger, FILE_BEGIN);
+
+	__int64 additionalStructLength = 0;
+	char* additionalStructLengthChars = reinterpret_cast<char*>(&additionalStructLength);
+	while ( ReadResourceData( resourceID, additionalStructLengthChars, 8) & GENERIC_READ ) {
+
+		if (resourceID >= RSRCID_MAX)
+			continue;
+
+		// CONTINUE HERE
+
+	}
 
 }
 
