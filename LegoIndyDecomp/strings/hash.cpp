@@ -24,14 +24,14 @@ int __cdecl GetHashIndex(Hashes *pHashesStruct, char *path) {
   }
 
   int hashIndex = 0;
-  int numberOfHashes = pHashesStruct->someIndex;
+  int numberOfHashes = pHashesStruct->SomeStructIndex;
 
   if ( numberOfHashes <= 0 ) {
 LABEL_7:
     int numberOfStrings = pHashesStruct->numOfStringHashIndexPairs;
     if ( numberOfStrings )
     {
-      char* currentStringOffset = pHashesStruct->stringHashIndexPairsBuffer;
+      char* currentStringOffset = pHashesStruct->stringHashIndexPairs;
       for ( int _ = 0; _ < numberOfStrings; ++_ )
       {
         currentPathOffset2 = path;

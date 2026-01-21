@@ -18,6 +18,7 @@ constexpr int RSRCID_MAX					  = (1<<12);
 
 enum FileAccessType { READ, CREATE, MODIFY, OTHER };
 enum FileReadErrorCode { HANDLE_CREATION_FAILED_1 = -3, HANDLE_CREATION_FAILED_2, OVERFLOW, NONE };
+enum FileResourceType { INVALID, FILEHANDLECONTAINER, FILEBUFFERCONTAINER, FILEPOINTERINFO };
 
 struct FileHandleContainer;
 struct FileDataContainer {
@@ -75,6 +76,8 @@ public:
 	static FileIOManager* Instance();
 
 	int TopLevelFileReadingFunction(char* fname, char* textBuffer, int maxDataSize);
+
+	static FileResourceType GetResourceType(int resourceID);
 
 	// reads file data into an available FileDataContainer
 	int Read(FileHandleContainer* pFileHandleContainer);

@@ -14,23 +14,22 @@ public:
     int status;
     int SomeStructIndex;
     SomeStruct *SomeStructArray;
-    char pad1[4];
+    int hashCount;
     Hash *hashArray;
-    int int2;
+    int status2;
     int int3;
     int *hashes;
     int numOfStringHashIndexPairs;
     char pad2[4];
-    char *stringHashIndexPairsBuffer;   // exact length variable?
+    char *stringHashIndexPairs;   // exact length variable?
     char pad3[4];
     FilePointerContainer filePointerContainersArray[8];
-    char pad4[2];
+    __int16 someInt16;
     __int16 fileAccessType;
     int int4;
     char pad5[4];
-    char *fileName;
-    char someString4[16];
-    int int5;
+    char *DATfileName;
+    char DATfileNameBuffer[];
 };
 
 // ===================== FUNCTIONS =====================
