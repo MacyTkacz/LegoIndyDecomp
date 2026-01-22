@@ -17,7 +17,7 @@ public:
     int hashCount;
     Hash *hashArray;
     int status2;
-    int int3;
+    char** pSomeString;
     int *hashes;
     int numOfStringHashIndexPairs;
     char pad2[4];

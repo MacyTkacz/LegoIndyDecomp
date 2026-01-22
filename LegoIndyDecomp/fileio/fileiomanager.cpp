@@ -521,7 +521,7 @@ int FileIOManager::SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fna
 		return 0;
 
 	int someStructIndex = GetFileDataIndex(pHashesStruct, fname);
-	if (someStructIndex < 0 || !pHashesStruct->SomeStructArray[someStructIndex].hash.nextOnMatch)
+	if (someStructIndex < 0 || !pHashesStruct->SomeStructArray[someStructIndex].hashArray->nextOnMatch)
 		return 0;
 
 	int filePointerInfoIndex = GetAvailableFilePointerInfoIndex();
@@ -540,13 +540,13 @@ int FileIOManager::SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fna
 	InitializeFilePointerContainerFileHandleID(pHashesStruct, filePointerContainerIndex);
 	pFilePointerInfo->pHashesStruct = pHashesStruct;
 
-	LARGE_INTEGER fileStart = ToLargeInt(CalculateStatusDependentValue(pHashesStruct, pHashesStruct->SomeStructArray[someStructIndex].someNum));
+	LARGE_INTEGER fileStart = ToLargeInt(CalculateStatusDependentValue(pHashesStruct, pHashesStruct->SomeStructArray[someStructIndex].hashCount));
 	
 	pFilePointerInfo->fileStartPosition = fileStart;
 	pFilePointerInfo->filePointerPosition = fileStart;
-	pFilePointerInfo->fileDataSize = pHashesStruct->SomeStructArray[someStructIndex].hash.nextOnMatch;
-	pFilePointerInfo->fileDataSizeWhenFileTypeIsNonzero = pHashesStruct->SomeStructArray[someStructIndex].hash.nextOnNonmatch;
-	pFilePointerInfo->fileType = pHashesStruct->SomeStructArray[someStructIndex].fileType;
+	pFilePointerInfo->fileDataSize = pHashesStruct->SomeStructArray[someStructIndex].hashArray->nextOnMatch;
+	pFilePointerInfo->fileDataSizeWhenFileTypeIsNonzero = pHashesStruct->SomeStructArray[someStructIndex].hashArray->nextOnNonmatch;
+	pFilePointerInfo->fileType = (FileType)pHashesStruct->SomeStructArray[someStructIndex].hashArray[1].nextOnMatch;
 	pFilePointerInfo->filePointerContainerIndex = filePointerContainerIndex;
 	pFilePointerContainer->filePointerPosition = fileStart;
 
@@ -831,7 +831,7 @@ int FileIOManager::DoesFileHaveFileHandle(char* fname) {
 
 	if (pHashesStruct && stringHashIndex >= 0) {
 		FileIOManager::someProcessingFlag = someProcessingFlag;
-		return pHashesStruct->SomeStructArray[stringHashIndex].hash.nextOnNonmatch;
+		return pHashesStruct->SomeStructArray[stringHashIndex].hashArray->nextOnNonmatch;
 	}
 	else {
 		int resourceID = SIXB44F0(fname, FileAccessType::READ, pHashesStruct, 1);
@@ -1059,12 +1059,107 @@ Hashes* FileIOManager::InitializeHashesStruct(char* fpath, void** pHashesStructA
 	char fpathJoined[256];
 	DefaultFilePathContainer.pathJoiningFunction(&DefaultFilePathContainer,fpathJoined,fpath,256);
 
-	unsigned short pathLength = ( strlen(fpathJoined) + 16 ) & 0xFFF0;
+	// round up to next 16-byte chunk to ensure null-termination
+	int pathLength = ( strlen(fpathJoined) + 16 ) & -16;
 	int structSize = offsetof(Hashes,DATfileNameBuffer) + pathLength + additionalStructLength;
 
-	*pHashesStructAddress = reinterpret_cast<char*>(*pHashesStructAddress) + structSize;
+	Hashes* pFinalHashesStruct; 
+	{
+		char* advanced = reinterpret_cast<char*>(*pHashesStructAddress) + 15;
+		// round down to 16-bit chunk
+		uintptr_t aligned = reinterpret_cast<uintptr_t>(advanced) & -16;
+		pFinalHashesStruct = reinterpret_cast<Hashes*>(aligned);
+	}
 
-	return 0;
+	// output
+	*pHashesStructAddress = reinterpret_cast<char*>(*pHashesStructAddress) + structSize;
+	if (pSize_out)
+		*pSize_out = structSize;
+
+	pFinalHashesStruct->someInt16 = 0;
+	pFinalHashesStruct->DATfileName = pFinalHashesStruct->DATfileNameBuffer;
+
+	char* pDATfileNameBufferEnd = &pFinalHashesStruct->DATfileNameBuffer[pathLength];
+	Hashes* pNextHashesStruct = reinterpret_cast<Hashes*>(pDATfileNameBufferEnd);
+	char* pNextHashesStructChar = reinterpret_cast<char*>(pDATfileNameBufferEnd);
+
+	char* currentOffset;
+	char currentChar = fpathJoined[0];
+	for ( currentOffset = pFinalHashesStruct->DATfileNameBuffer; currentChar; ++currentOffset ) {
+		*currentOffset = currentChar;
+		currentChar = currentOffset[ fpathJoined - pFinalHashesStruct->DATfileNameBuffer + 1 ];
+	}
+	*currentOffset = 0;
+
+
+	// DISGUSTING NESTING INCOMING
+	if ( ReadResourceData(resourceID,pDATfileNameBufferEnd,additionalStructLength) & GENERIC_READ ) {
+
+		__int64 n = -1;
+		do {
+			do {
+
+				if (resourceID >= RSRCID_MAX)
+					break;
+
+				switch (resourceType) {
+				case FileResourceType::FILEHANDLECONTAINER: {
+					if ( pFileHandleContainer->someProcessingFlag ) {
+						pFileHandleContainer->filePointerPosition.QuadPart = bigsum;
+						n = bigsum;
+					}
+					else
+						n = RawSetFilePointer(resourceID-1,ToLargeInt(bigsum),FILE_BEGIN).QuadPart;
+					break;
+				}
+				case FileResourceType::FILEBUFFERCONTAINER: {
+					pFileBufferContainer->filePointerPosition = &pFileBufferContainer->textBuffer[bigsum];
+					n = bigsum;
+					break;
+				}
+				case FileResourceType::FILEPOINTERINFO: {
+					n = SetFilePointer(
+						pFilePointerContainer->fileHandleID,
+						ToLargeInt( bigsum + pFilePointerInfo->fileStartPosition.QuadPart ),
+						FILE_BEGIN
+					).QuadPart;
+					pFilePointerInfo->filePointerPosition.QuadPart = n;
+					pFilePointerContainer->filePointerPosition.QuadPart = n;
+					break;
+				}
+				}
+
+			}
+			while( n < 0 );
+		}
+		while ( ReadResourceData(resourceID,pNextHashesStructChar,additionalStructLength) & GENERIC_READ );
+
+	}
+
+	if (fileAccessType == FileAccessType::OTHER)
+		while ( AssertValidStructLinkage(resourceID) );
+
+	int someStructIndex = pNextHashesStruct->SomeStructIndex;
+
+	pFinalHashesStruct->status = pNextHashesStruct->status;
+	pFinalHashesStruct->SomeStructArray = pNextHashesStruct->SomeStructArray;
+	pFinalHashesStruct->SomeStructIndex = someStructIndex;
+
+	SomeStruct* someStruct = &pNextHashesStruct->SomeStructArray[someStructIndex];
+	int hashCount = someStruct->hashCount;
+	pFinalHashesStruct->hashCount = hashCount;
+
+	Hash* hashArray = someStruct->hashArray;
+	pFinalHashesStruct->hashArray = hashArray;
+
+	Hash* pHash = &hashArray[hashCount];
+	pFinalHashesStruct->status2 = *reinterpret_cast<int*>(&pHash->nextOnMatch);
+	char** pHashString = &pHash->str;
+
+	int i = 0;
+	for (pFinalHashesStruct->pSomeString = pHashString; i < hashCount; pFinalHashesStruct->hashArray[i++].str += reinterpret_cast<uintptr_t>(pHashString) );
+
+	pFinalHashesStruct->hashArray[0]
 
 }
 

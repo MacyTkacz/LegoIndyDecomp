@@ -17,9 +17,8 @@ enum FileType {
 };
 
 struct SomeStruct {
-    int someNum;
-	Hash hash;
-    FileType fileType;
+    int hashCount;
+	Hash hashArray[];
 };
 
 #endif // LEGOINDY_FILEIO_TYPES_H
