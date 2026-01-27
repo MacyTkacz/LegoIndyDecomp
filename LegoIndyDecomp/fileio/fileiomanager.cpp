@@ -1,3 +1,4 @@
+#include "macros.h"
 #include "fileio.h"
 #include "strings/std.h"
 #include "strings/lz2k.h"
@@ -540,7 +541,7 @@ int FileIOManager::SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fna
 	InitializeFilePointerContainerFileHandleID(pHashesStruct, filePointerContainerIndex);
 	pFilePointerInfo->pHashesStruct = pHashesStruct;
 
-	LARGE_INTEGER fileStart = ToLargeInt(CalculateStatusDependentValue(pHashesStruct, pHashesStruct->SomeStructArray[someStructIndex].hashCount));
+	LARGE_INTEGER fileStart = ToLargeInt(CalculateStatusDependentValue(pHashesStruct, pHashesStruct->SomeStructArray[someStructIndex].someIndex));
 	
 	pFilePointerInfo->fileStartPosition = fileStart;
 	pFilePointerInfo->filePointerPosition = fileStart;
@@ -947,7 +948,6 @@ Hashes* FileIOManager::InitializeHashesStruct(char* fpath, void** pHashesStructA
 		return 0;	
 	}
 
-	FileResourceType resourceType = GetResourceType(resourceID);
 	FileHandleContainer* pFileHandleContainer;
 	FileBufferContainer* pFileBufferContainer;
 	FilePointerContainer* pFilePointerContainer;
@@ -973,29 +973,24 @@ Hashes* FileIOManager::InitializeHashesStruct(char* fpath, void** pHashesStructA
 
 			filePointer = SomeLargeInteger.QuadPart;
 
-			switch(resourceType) {
-				case FileResourceType::FILEHANDLECONTAINER: {
-
+			FILERESOURCETYPESWITCH(resourceID)
+				CASE_FILEHANDLECONTAINER()	
 					pFileHandleContainer = &FileHandleContainersArray[resourceID - 1];
 					if (pFileHandleContainer->someProcessingFlag)
 						pFileHandleContainer->filePointerPosition = SomeLargeInteger;
 					else
 						filePointer = RawSetFilePointer(resourceID-1,SomeLargeInteger,FILE_BEGIN).QuadPart;
 					break;
-
 				}
-				case FileResourceType::FILEBUFFERCONTAINER: {
-
+				CASE_FILEBUFFERCONTAINER()
 					pFileBufferContainer = &FileBufferContainersArray[resourceID - RSRCID_FILEBUFFERCONTAINERSBASE];
 					char* textBuffer = pFileBufferContainer->textBuffer;
 					char* bufferOffset = &textBuffer[SomeLargeInteger.QuadPart];
 					pFileBufferContainer->filePointerPosition = bufferOffset;
 					filePointer = bufferOffset - textBuffer;
 					break;
-
 				}
-				case FileResourceType::FILEPOINTERINFO: {
-
+				CASE_FILEPOINTERINFO()
 					pFilePointerInfo = &FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE];
 					int fpcIndex = pFilePointerInfo->filePointerContainerIndex;
 					pFilePointerContainer = &pFilePointerInfo->pHashesStruct->filePointerContainersArray[fpcIndex];
@@ -1008,7 +1003,6 @@ Hashes* FileIOManager::InitializeHashesStruct(char* fpath, void** pHashesStructA
 					LARGE_INTEGER liFilePointer = ToLargeInt(filePointer);
 					pFilePointerInfo->filePointerPosition = liFilePointer;
 					pFilePointerContainer->filePointerPosition = liFilePointer; 
-
 				}
 			}
 		}
@@ -1025,20 +1019,20 @@ Hashes* FileIOManager::InitializeHashesStruct(char* fpath, void** pHashesStructA
 	while (resourceID < RSRCID_MAX) {
 
 		__int64 n = -1;
-		switch(resourceID) {
-			case FileResourceType::FILEHANDLECONTAINER: {
+		FILERESOURCETYPESWITCH(resourceID)
+			CASE_FILEHANDLECONTAINER()	
 				if (pFileHandleContainer->someProcessingFlag)
 					pFileHandleContainer->filePointerPosition.QuadPart = bigsum;
 				else 
 					n = RawSetFilePointer(resourceID-1,ToLargeInt(bigsum),FILE_BEGIN).QuadPart;
 				break;
 			}
-			case FileResourceType::FILEBUFFERCONTAINER: {
+			CASE_FILEBUFFERCONTAINER()	
 				pFileBufferContainer->filePointerPosition = &pFileBufferContainer->textBuffer[bigsum];
 				n = bigsum;
 				break;
 			}
-			case FileResourceType::FILEPOINTERINFO: {
+			CASE_FILEPOINTERINFO()	
 				LARGE_INTEGER distToMove = ToLargeInt( pFilePointerInfo->filePointerPosition.QuadPart + bigsum );
 				n = SetFilePointer( pFilePointerContainer->fileHandleID, distToMove, FILE_BEGIN ).QuadPart;
 				pFilePointerInfo->filePointerPosition.QuadPart = n;
@@ -1102,31 +1096,31 @@ Hashes* FileIOManager::InitializeHashesStruct(char* fpath, void** pHashesStructA
 				if (resourceID >= RSRCID_MAX)
 					break;
 
-				switch (resourceType) {
-				case FileResourceType::FILEHANDLECONTAINER: {
-					if ( pFileHandleContainer->someProcessingFlag ) {
-						pFileHandleContainer->filePointerPosition.QuadPart = bigsum;
-						n = bigsum;
+				FILERESOURCETYPESWITCH(resourceID)
+					CASE_FILEHANDLECONTAINER()	
+						if ( pFileHandleContainer->someProcessingFlag ) {
+							pFileHandleContainer->filePointerPosition.QuadPart = bigsum;
+							n = bigsum;
+						}
+						else
+							n = RawSetFilePointer(resourceID-1,ToLargeInt(bigsum),FILE_BEGIN).QuadPart;
+						break;
 					}
-					else
-						n = RawSetFilePointer(resourceID-1,ToLargeInt(bigsum),FILE_BEGIN).QuadPart;
-					break;
-				}
-				case FileResourceType::FILEBUFFERCONTAINER: {
-					pFileBufferContainer->filePointerPosition = &pFileBufferContainer->textBuffer[bigsum];
-					n = bigsum;
-					break;
-				}
-				case FileResourceType::FILEPOINTERINFO: {
-					n = SetFilePointer(
-						pFilePointerContainer->fileHandleID,
-						ToLargeInt( bigsum + pFilePointerInfo->fileStartPosition.QuadPart ),
-						FILE_BEGIN
-					).QuadPart;
-					pFilePointerInfo->filePointerPosition.QuadPart = n;
-					pFilePointerContainer->filePointerPosition.QuadPart = n;
-					break;
-				}
+					CASE_FILEBUFFERCONTAINER()	
+						pFileBufferContainer->filePointerPosition = &pFileBufferContainer->textBuffer[bigsum];
+						n = bigsum;
+						break;
+					}
+					CASE_FILEPOINTERINFO()	
+						n = SetFilePointer(
+							pFilePointerContainer->fileHandleID,
+							ToLargeInt( bigsum + pFilePointerInfo->fileStartPosition.QuadPart ),
+							FILE_BEGIN
+						).QuadPart;
+						pFilePointerInfo->filePointerPosition.QuadPart = n;
+						pFilePointerContainer->filePointerPosition.QuadPart = n;
+						break;
+					}
 				}
 
 			}
@@ -1139,27 +1133,18 @@ Hashes* FileIOManager::InitializeHashesStruct(char* fpath, void** pHashesStructA
 	if (fileAccessType == FileAccessType::OTHER)
 		while ( AssertValidStructLinkage(resourceID) );
 
-	int someStructIndex = pNextHashesStruct->SomeStructIndex;
-
 	pFinalHashesStruct->status = pNextHashesStruct->status;
 	pFinalHashesStruct->SomeStructArray = pNextHashesStruct->SomeStructArray;
-	pFinalHashesStruct->SomeStructIndex = someStructIndex;
+	pFinalHashesStruct->SomeStructIndex = pNextHashesStruct->SomeStructIndex;
 
-	SomeStruct* someStruct = &pNextHashesStruct->SomeStructArray[someStructIndex];
-	int hashCount = someStruct->hashCount;
-	pFinalHashesStruct->hashCount = hashCount;
+	int someStructIndex = pFinalHashesStruct->SomeStructIndex;
+	SomeStruct* pSomeStruct = &pNextHashesStruct->SomeStructArray[someStructIndex];
 
-	Hash* hashArray = someStruct->hashArray;
-	pFinalHashesStruct->hashArray = hashArray;
+	pFinalHashesStruct->hashArray = pSomeStruct->hashArray;
+	pFinalHashesStruct->someIndex = pSomeStruct->someIndex;
+	pFinalHashesStruct->someHash = pSomeStruct->hashArray[ pSomeStruct->someIndex ];
 
-	Hash* pHash = &hashArray[hashCount];
-	pFinalHashesStruct->status2 = *reinterpret_cast<int*>(&pHash->nextOnMatch);
-	char** pHashString = &pHash->str;
-
-	int i = 0;
-	for (pFinalHashesStruct->pSomeString = pHashString; i < hashCount; pFinalHashesStruct->hashArray[i++].str += reinterpret_cast<uintptr_t>(pHashString) );
-
-	pFinalHashesStruct->hashArray[0]
+	return 0; // CONTINUE HERE
 
 }
 

@@ -14,10 +14,9 @@ public:
     int status;
     int SomeStructIndex;
     SomeStruct *SomeStructArray;
-    int hashCount;
+    int someIndex;
     Hash *hashArray;
-    int status2;
-    char** pSomeString;
+    Hash someHash;
     int *hashes;
     int numOfStringHashIndexPairs;
     char pad2[4];

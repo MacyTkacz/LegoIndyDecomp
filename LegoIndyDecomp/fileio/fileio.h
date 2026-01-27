@@ -18,7 +18,6 @@ constexpr int RSRCID_MAX					  = (1<<12);
 
 enum FileAccessType { READ, CREATE, MODIFY, OTHER };
 enum FileReadErrorCode { HANDLE_CREATION_FAILED_1 = -3, HANDLE_CREATION_FAILED_2, OVERFLOW, NONE };
-enum FileResourceType { INVALID, FILEHANDLECONTAINER, FILEBUFFERCONTAINER, FILEPOINTERINFO };
 
 struct FileHandleContainer;
 struct FileDataContainer {

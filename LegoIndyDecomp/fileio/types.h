@@ -4,6 +4,8 @@
 #include <Windows.h>
 #include <strings/types.h>
 
+enum FileResourceType { INVALID, FILEHANDLECONTAINER, FILEBUFFERCONTAINER, FILEPOINTERINFO };
+
 struct FilePointerContainer {
 	int fileHandleID;
 	int fileHandleIndex;
@@ -17,8 +19,9 @@ enum FileType {
 };
 
 struct SomeStruct {
-    int hashCount;
-	Hash hashArray[];
+    int someIndex;
+	Hash* hashArray;
+	char pad[8];
 };
 
 #endif // LEGOINDY_FILEIO_TYPES_H
