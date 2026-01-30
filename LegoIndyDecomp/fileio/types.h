@@ -4,6 +4,8 @@
 #include <Windows.h>
 #include <strings/types.h>
 
+class DATParser;
+
 enum FileResourceType { INVALID, FILEHANDLECONTAINER, FILEBUFFERCONTAINER, FILEPOINTERINFO };
 
 struct FilePointerContainer {
@@ -13,7 +15,7 @@ struct FilePointerContainer {
 };
 
 enum FileType {
-	TYPE1,
+	UNCOMPRESSED,
 	TYPE2,
 	LZ2K
 };
@@ -22,6 +24,13 @@ struct SomeStruct {
     int someIndex;
 	Hash* hashArray;
 	char pad[8];
+};
+
+struct SomeSixteen {
+	int int1;
+	int int2;
+	int int3;
+	int int4;
 };
 
 #endif // LEGOINDY_FILEIO_TYPES_H

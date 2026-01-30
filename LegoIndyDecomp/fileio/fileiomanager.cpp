@@ -118,7 +118,7 @@ void FileIOManager::CloseResource(int resourceID) {
 		FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE];
 		int filePointerContainerIndex = pFilePointerInfo->filePointerContainerIndex;
 		if (filePointerContainerIndex >= 0)
-			pFilePointerInfo->pHashesStruct->filePointerContainersArray[filePointerContainerIndex].fileHandleIndex = -1;
+			pFilePointerInfo->pDATParser->filePointerContainersArray[filePointerContainerIndex].fileHandleIndex = -1;
 		pFilePointerInfo->bIsInUse = 0;
 		return;
 
@@ -229,7 +229,7 @@ LARGE_INTEGER FileIOManager::SetFilePointer(FilePointerInfo* pFilePointerInfo, L
 	__int64 initialPosition;
 	LARGE_INTEGER newPosition;
 
-	FilePointerContainer* pFilePointerContainer = &pFilePointerInfo->pHashesStruct->filePointerContainersArray[pFilePointerInfo->filePointerContainerIndex];
+	FilePointerContainer* pFilePointerContainer = &pFilePointerInfo->pDATParser->filePointerContainersArray[pFilePointerInfo->filePointerContainerIndex];
 
 	switch (moveMethod) {
 		case FILE_CURRENT: {
@@ -398,7 +398,7 @@ int FileIOManager::AssertValidStructLinkage(int resourceID) {
 	while (i < RSRCID_FILEBUFFERCONTAINERSBASE) {
 		FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[i - RSRCID_FILEPOINTERINFOSBASE];
 		int filePointerContainerIndex = pFilePointerInfo->filePointerContainerIndex;
-		i = pFilePointerInfo->pHashesStruct->filePointerContainersArray[filePointerContainerIndex].fileHandleID;
+		i = pFilePointerInfo->pDATParser->filePointerContainersArray[filePointerContainerIndex].fileHandleID;
 		if (i < RSRCID_FILEPOINTERINFOSBASE)
 			break;
 	}
@@ -406,7 +406,7 @@ int FileIOManager::AssertValidStructLinkage(int resourceID) {
 
 }
 
-int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* pHashesStruct, int a4) {
+int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParser* pDATParser, int a4) {
 
 	int resourceID;
 	LARGE_INTEGER newFilePointerPosition;
@@ -414,8 +414,8 @@ int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* 
 	FilePathContainer* pFilePathContainer = GetFilePathContainerFromPath(fpath);
 	if (!pFilePathContainer ) {
 
-		if (pHashesStruct && fileAccessType != CREATE && fileAccessType != MODIFY) {
-			int resourceID = SomeLargeFileReadingFunction(pHashesStruct, fpath, fileAccessType);
+		if (pDATParser && fileAccessType != CREATE && fileAccessType != MODIFY) {
+			int resourceID = SomeLargeFileReadingFunction(pDATParser, fpath, fileAccessType);
 			if (resourceID)
 				return resourceID;
 		}
@@ -491,23 +491,23 @@ int FileIOManager::GetAvailableFilePointerInfoIndex() {
 
 }
 
-// if pHashesStruct->status <= -2 return SomeLargeInteger+(base*256), else return SomeLargeInteger+base
-unsigned __int64 FileIOManager::CalculateStatusDependentValue(Hashes* pHashesStruct, int base) {
+// if pDATParser->status <= -2 return SomeLargeInteger+(base*256), else return SomeLargeInteger+base
+unsigned __int64 FileIOManager::CalculateStatusDependentValue(DATParser* pDATParser, int base) {
 
-	bool flag = pHashesStruct->status <= -2;
+	bool flag = pDATParser->status <= -2;
 	return SomeLargeInteger.QuadPart + ((__int64)base << (flag ? 8 : 0));
 
 }
 
-int FileIOManager::InitializeFilePointerContainerFileHandleID(Hashes* pHashesStruct, int filePointerContainerIndex) {
+int FileIOManager::InitializeFilePointerContainerFileHandleID(DATParser* pDATParser, int filePointerContainerIndex) {
 
 	// return FilePointerContainer's fileHandleID, if any
-	FilePointerContainer* pFilePointerContainer = &pHashesStruct->filePointerContainersArray[filePointerContainerIndex];
+	FilePointerContainer* pFilePointerContainer = &pDATParser->filePointerContainersArray[filePointerContainerIndex];
 	if (pFilePointerContainer->fileHandleID)
 		return pFilePointerContainer->fileHandleID;
 
 	// give FilePointerContainer a new fileHandleID and reset its FilePointerPosition to 0
-	int fileHandleID = SIXB44F0(const_cast<char*>(pHashesStruct->DATfileName), (FileAccessType)pHashesStruct->fileAccessType, 0, 0);
+	int fileHandleID = SIXB44F0(const_cast<char*>(pDATParser->DATfileName.c_str()), (FileAccessType)pDATParser->fileAccessType, 0, 0);
 	pFilePointerContainer->fileHandleID = fileHandleID;
 	pFilePointerContainer->filePointerPosition.QuadPart = 0;
 	return fileHandleID;
@@ -515,39 +515,39 @@ int FileIOManager::InitializeFilePointerContainerFileHandleID(Hashes* pHashesStr
 }
 
 // initializes and returns a FilePointerInfo
-int FileIOManager::SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fname, FileAccessType fileAccessType) {
+int FileIOManager::SomeLargeFileReadingFunction(DATParser* pDATParser, char* fname, FileAccessType fileAccessType) {
 
 	// return if not READ
 	if (fileAccessType)
 		return 0;
 
-	int someStructIndex = GetFileDataIndex(pHashesStruct, fname);
-	if (someStructIndex < 0 || !pHashesStruct->SomeStructArray[someStructIndex].hashArray->nextOnMatch)
+	int someStructIndex = GetFileDataIndex(pDATParser, fname);
+	if (someStructIndex < 0 || !pDATParser->SomeSixteenArray[someStructIndex].int2)
 		return 0;
 
 	int filePointerInfoIndex = GetAvailableFilePointerInfoIndex();
 	if (filePointerInfoIndex == -1)
 		return 0;
 
-	int filePointerContainerIndex = pHashesStruct->LinkAvailableFilePointerContainer(filePointerInfoIndex);
+	int filePointerContainerIndex = pDATParser->LinkAvailableFilePointerContainer(filePointerInfoIndex);
 	if (filePointerContainerIndex == -1) {
 		FilePointerInfoArray[filePointerInfoIndex].bIsInUse = 0;
 		return 0;
 	}
 
 	FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[filePointerInfoIndex];
-	FilePointerContainer* pFilePointerContainer = &pHashesStruct->filePointerContainersArray[filePointerContainerIndex];
+	FilePointerContainer* pFilePointerContainer = &pDATParser->filePointerContainersArray[filePointerContainerIndex];
 
-	InitializeFilePointerContainerFileHandleID(pHashesStruct, filePointerContainerIndex);
-	pFilePointerInfo->pHashesStruct = pHashesStruct;
+	InitializeFilePointerContainerFileHandleID(pDATParser, filePointerContainerIndex);
+	pFilePointerInfo->pDATParser = pDATParser;
 
-	LARGE_INTEGER fileStart = ToLargeInt(CalculateStatusDependentValue(pHashesStruct, pHashesStruct->SomeStructArray[someStructIndex].someIndex));
+	LARGE_INTEGER fileStart = ToLargeInt(CalculateStatusDependentValue(pDATParser, pDATParser->SomeSixteenArray[someStructIndex].int1));
 	
 	pFilePointerInfo->fileStartPosition = fileStart;
 	pFilePointerInfo->filePointerPosition = fileStart;
-	pFilePointerInfo->fileDataSize = pHashesStruct->SomeStructArray[someStructIndex].hashArray->nextOnMatch;
-	pFilePointerInfo->fileDataSizeWhenFileTypeIsNonzero = pHashesStruct->SomeStructArray[someStructIndex].hashArray->nextOnNonmatch;
-	pFilePointerInfo->fileType = (FileType)pHashesStruct->SomeStructArray[someStructIndex].hashArray[1].nextOnMatch;
+	pFilePointerInfo->fileDataSize = pDATParser->SomeSixteenArray[someStructIndex].int2;
+	pFilePointerInfo->fileDataSizeWhenFileTypeIsNonzero = pDATParser->SomeSixteenArray[someStructIndex].int3;
+	pFilePointerInfo->fileType = static_cast<FileType>( pDATParser->SomeSixteenArray[someStructIndex].int4 );
 	pFilePointerInfo->filePointerContainerIndex = filePointerContainerIndex;
 	pFilePointerContainer->filePointerPosition = fileStart;
 
@@ -736,7 +736,7 @@ int FileIOManager::FilePointerInfoRead(int resourceID, char* dataBuffer, int num
 	FilePointerContainer* fpc;
 	{
 		int index = fpi->filePointerContainerIndex;
-		fpc = &fpi->pHashesStruct->filePointerContainersArray[index];
+		fpc = &fpi->pDATParser->filePointerContainersArray[index];
 	}
 
 	if (fpi->fileType == FileType::LZ2K) {
@@ -827,15 +827,15 @@ int FileIOManager::DoesFileHaveFileHandle(char* fname) {
 	int someProcessingFlag = FileIOManager::someProcessingFlag;
 	FileIOManager::someProcessingFlag = 0;
 
-	Hashes* pHashesStruct = pSomeHashesStruct;
-	int stringHashIndex = GetFileDataIndex(pHashesStruct, fname);
+	DATParser* pDATParser = pSomeDATParser;
+	int stringHashIndex = GetFileDataIndex(pDATParser, fname);
 
-	if (pHashesStruct && stringHashIndex >= 0) {
+	if (pDATParser && stringHashIndex >= 0) {
 		FileIOManager::someProcessingFlag = someProcessingFlag;
-		return pHashesStruct->SomeStructArray[stringHashIndex].hashArray->nextOnNonmatch;
+		return pDATParser->SomeSixteenArray[stringHashIndex].int3;
 	}
 	else {
-		int resourceID = SIXB44F0(fname, FileAccessType::READ, pHashesStruct, 1);
+		int resourceID = SIXB44F0(fname, FileAccessType::READ, pDATParser, 1);
 		if (resourceID)
 			CloseResource(resourceID);
 		FileIOManager::someProcessingFlag = someProcessingFlag;	
@@ -845,15 +845,15 @@ int FileIOManager::DoesFileHaveFileHandle(char* fname) {
 }
 
 // reads data and updates filePointerPosition for FilePointerInfo and FilePointerContainer
-int FileIOManager::SIXB59E0(Hashes* pHashesStruct, char* fname, char* dataBuffer, int maxDataSize) {
+int FileIOManager::SIXB59E0(DATParser* pDATParser, char* fname, char* dataBuffer, int maxDataSize) {
 
 	int dataSize = 0;
 
-	int resourceID = SomeLargeFileReadingFunction(pHashesStruct, fname, FileAccessType::READ);
+	int resourceID = SomeLargeFileReadingFunction(pDATParser, fname, FileAccessType::READ);
 	if (!resourceID)
 		return 0;
 
-	if (pHashesStruct->fileAccessType == FileAccessType::OTHER)
+	if (pDATParser->fileAccessType == FileAccessType::OTHER)
 		while ( AssertValidStructLinkage(resourceID) );
 
 
@@ -870,7 +870,7 @@ int FileIOManager::SIXB59E0(Hashes* pHashesStruct, char* fname, char* dataBuffer
 	}
 
 	int filePointerContainerIndex = pFilePointerInfo->filePointerContainerIndex;
-	FilePointerContainer* pFilePointerContainer = &pFilePointerInfo->pHashesStruct->filePointerContainersArray[filePointerContainerIndex];
+	FilePointerContainer* pFilePointerContainer = &pFilePointerInfo->pDATParser->filePointerContainersArray[filePointerContainerIndex];
 	resourceID = pFilePointerContainer->fileHandleID;
 	__int64 fileStartPosition = pFilePointerInfo->fileStartPosition.QuadPart;
 
@@ -910,7 +910,7 @@ int FileIOManager::SIXB59E0(Hashes* pHashesStruct, char* fname, char* dataBuffer
 
 	}
 
-	if (pHashesStruct->fileAccessType == FileAccessType::OTHER)
+	if (pDATParser->fileAccessType == FileAccessType::OTHER)
 		while (AssertValidStructLinkage(resourceID));
 
 	CloseResource(resourceID);
@@ -923,8 +923,8 @@ int FileIOManager::TopLevelFileReadingFunction(char* fname, char* textBuffer, in
 	int result = 0;
 	fileReadErrorCode = FileReadErrorCode::NONE;
 
-	if (pSomeHashesStruct) {
-		if ( result = SIXB59E0(pSomeHashesStruct,fname,textBuffer,maxDataSize), result )
+	if (pSomeDATParser) {
+		if ( result = SIXB59E0(pSomeDATParser,fname,textBuffer,maxDataSize), result )
 			return result;
 	}
 
@@ -936,213 +936,7 @@ int FileIOManager::TopLevelFileReadingFunction(char* fname, char* textBuffer, in
 
 }
 
-Hashes* FileIOManager::InitializeHashesStruct(char* fpath, void** pHashesStructAddress, size_t* pSize_out, FileAccessType fileAccessType) {
-
-	int resourceID = SIXB44F0(fpath, fileAccessType, 0, 0);
-	if (!resourceID)
-		return 0;
-
-	if (!pHashesStructAddress) {
-		CloseResource(resourceID);
-		FileIOManager::someProcessingFlag = someProcessingFlag;
-		return 0;	
-	}
-
-	FileHandleContainer* pFileHandleContainer;
-	FileBufferContainer* pFileBufferContainer;
-	FilePointerContainer* pFilePointerContainer;
-	FilePointerInfo* pFilePointerInfo;
-
-	int someProcessingFlag = FileIOManager::someProcessingFlag;
-
-	if (fileAccessType == FileAccessType::OTHER)
-		while (AssertValidStructLinkage(resourceID));
-
-	if (SomeLargeInteger.QuadPart)
-		SetFilePointer(resourceID, SomeLargeInteger, FILE_BEGIN);
-
-	__int64 additionalStructLength = 0;
-	char* additionalStructLengthChars = reinterpret_cast<char*>(&additionalStructLength);
-	while ( ReadResourceData( resourceID, additionalStructLengthChars, 8) & GENERIC_READ ) {
-
-		if (resourceID >= RSRCID_MAX)
-			continue;
-
-		__int64 filePointer = -1;
-		while (filePointer < 0) {
-
-			filePointer = SomeLargeInteger.QuadPart;
-
-			FILERESOURCETYPESWITCH(resourceID)
-				CASE_FILEHANDLECONTAINER()	
-					pFileHandleContainer = &FileHandleContainersArray[resourceID - 1];
-					if (pFileHandleContainer->someProcessingFlag)
-						pFileHandleContainer->filePointerPosition = SomeLargeInteger;
-					else
-						filePointer = RawSetFilePointer(resourceID-1,SomeLargeInteger,FILE_BEGIN).QuadPart;
-					break;
-				}
-				CASE_FILEBUFFERCONTAINER()
-					pFileBufferContainer = &FileBufferContainersArray[resourceID - RSRCID_FILEBUFFERCONTAINERSBASE];
-					char* textBuffer = pFileBufferContainer->textBuffer;
-					char* bufferOffset = &textBuffer[SomeLargeInteger.QuadPart];
-					pFileBufferContainer->filePointerPosition = bufferOffset;
-					filePointer = bufferOffset - textBuffer;
-					break;
-				}
-				CASE_FILEPOINTERINFO()
-					pFilePointerInfo = &FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE];
-					int fpcIndex = pFilePointerInfo->filePointerContainerIndex;
-					pFilePointerContainer = &pFilePointerInfo->pHashesStruct->filePointerContainersArray[fpcIndex];
-					filePointer = SetFilePointer(
-						pFilePointerContainer->fileHandleID,
-						ToLargeInt( SomeLargeInteger.QuadPart + pFilePointerInfo->fileStartPosition.QuadPart ),
-						FILE_BEGIN
-					).QuadPart;
-
-					LARGE_INTEGER liFilePointer = ToLargeInt(filePointer);
-					pFilePointerInfo->filePointerPosition = liFilePointer;
-					pFilePointerContainer->filePointerPosition = liFilePointer; 
-				}
-			}
-		}
-	}
-
-	if (fileAccessType == FileAccessType::OTHER)
-		while ( AssertValidStructLinkage(resourceID) );
-	
-	if (additionalStructLength < 0)
-		additionalStructLength *= -256;
-
-	__int64 bigsum = SomeLargeInteger.QuadPart + additionalStructLength;
-
-	while (resourceID < RSRCID_MAX) {
-
-		__int64 n = -1;
-		FILERESOURCETYPESWITCH(resourceID)
-			CASE_FILEHANDLECONTAINER()	
-				if (pFileHandleContainer->someProcessingFlag)
-					pFileHandleContainer->filePointerPosition.QuadPart = bigsum;
-				else 
-					n = RawSetFilePointer(resourceID-1,ToLargeInt(bigsum),FILE_BEGIN).QuadPart;
-				break;
-			}
-			CASE_FILEBUFFERCONTAINER()	
-				pFileBufferContainer->filePointerPosition = &pFileBufferContainer->textBuffer[bigsum];
-				n = bigsum;
-				break;
-			}
-			CASE_FILEPOINTERINFO()	
-				LARGE_INTEGER distToMove = ToLargeInt( pFilePointerInfo->filePointerPosition.QuadPart + bigsum );
-				n = SetFilePointer( pFilePointerContainer->fileHandleID, distToMove, FILE_BEGIN ).QuadPart;
-				pFilePointerInfo->filePointerPosition.QuadPart = n;
-				pFilePointerContainer->filePointerPosition.QuadPart = n;	
-
-				break;
-			}
-		}
-
-		if (n >= 0)
-			break;
-
-	}
-
-	if (fileAccessType == FileAccessType::OTHER)
-		while ( AssertValidStructLinkage(resourceID) );
-
-	char fpathJoined[256];
-	DefaultFilePathContainer.pathJoiningFunction(&DefaultFilePathContainer,fpathJoined,fpath,256);
-
-	// round up to next 16-byte chunk to ensure null-termination
-	int pathLength = ( strlen(fpathJoined) + 16 ) & -16;
-	int structSize = offsetof(Hashes,DATfileNameBuffer) + pathLength + additionalStructLength;
-
-	Hashes* pFinalHashesStruct; 
-	{
-		char* advanced = reinterpret_cast<char*>(*pHashesStructAddress) + 15;
-		// round down to 16-bit chunk
-		uintptr_t aligned = reinterpret_cast<uintptr_t>(advanced) & -16;
-		pFinalHashesStruct = reinterpret_cast<Hashes*>(aligned);
-	}
-
-	// output
-	*pHashesStructAddress = reinterpret_cast<char*>(*pHashesStructAddress) + structSize;
-	if (pSize_out)
-		*pSize_out = structSize;
-
-	pFinalHashesStruct->someInt16 = 0;
-	pFinalHashesStruct->DATfileName = pFinalHashesStruct->DATfileNameBuffer;
-
-	char* pDATfileNameBufferEnd = &pFinalHashesStruct->DATfileNameBuffer[pathLength];
-	Hashes* pNextHashesStruct = reinterpret_cast<Hashes*>(pDATfileNameBufferEnd);
-	char* pNextHashesStructChar = reinterpret_cast<char*>(pDATfileNameBufferEnd);
-
-	char* currentOffset;
-	char currentChar = fpathJoined[0];
-	for ( currentOffset = pFinalHashesStruct->DATfileNameBuffer; currentChar; ++currentOffset ) {
-		*currentOffset = currentChar;
-		currentChar = currentOffset[ fpathJoined - pFinalHashesStruct->DATfileNameBuffer + 1 ];
-	}
-	*currentOffset = 0;
-
-
-	// DISGUSTING NESTING INCOMING
-	if ( ReadResourceData(resourceID,pDATfileNameBufferEnd,additionalStructLength) & GENERIC_READ ) {
-
-		__int64 n = -1;
-		do {
-			do {
-
-				if (resourceID >= RSRCID_MAX)
-					break;
-
-				FILERESOURCETYPESWITCH(resourceID)
-					CASE_FILEHANDLECONTAINER()	
-						if ( pFileHandleContainer->someProcessingFlag ) {
-							pFileHandleContainer->filePointerPosition.QuadPart = bigsum;
-							n = bigsum;
-						}
-						else
-							n = RawSetFilePointer(resourceID-1,ToLargeInt(bigsum),FILE_BEGIN).QuadPart;
-						break;
-					}
-					CASE_FILEBUFFERCONTAINER()	
-						pFileBufferContainer->filePointerPosition = &pFileBufferContainer->textBuffer[bigsum];
-						n = bigsum;
-						break;
-					}
-					CASE_FILEPOINTERINFO()	
-						n = SetFilePointer(
-							pFilePointerContainer->fileHandleID,
-							ToLargeInt( bigsum + pFilePointerInfo->fileStartPosition.QuadPart ),
-							FILE_BEGIN
-						).QuadPart;
-						pFilePointerInfo->filePointerPosition.QuadPart = n;
-						pFilePointerContainer->filePointerPosition.QuadPart = n;
-						break;
-					}
-				}
-
-			}
-			while( n < 0 );
-		}
-		while ( ReadResourceData(resourceID,pNextHashesStructChar,additionalStructLength) & GENERIC_READ );
-
-	}
-
-	if (fileAccessType == FileAccessType::OTHER)
-		while ( AssertValidStructLinkage(resourceID) );
-
-	pFinalHashesStruct->status = pNextHashesStruct->status;
-	pFinalHashesStruct->SomeStructArray = pNextHashesStruct->SomeStructArray;
-	pFinalHashesStruct->SomeStructIndex = pNextHashesStruct->SomeStructIndex;
-
-	int someStructIndex = pFinalHashesStruct->SomeStructIndex;
-	SomeStruct* pSomeStruct = &pNextHashesStruct->SomeStructArray[someStructIndex];
-
-	pFinalHashesStruct->hashArray = pSomeStruct->hashArray;
-	pFinalHashesStruct->someIndex = pSomeStruct->someIndex;
-	pFinalHashesStruct->someHash = pSomeStruct->hashArray[ pSomeStruct->someIndex ];
+DATParser* FileIOManager::InitializeHashesStruct(char* fpath, void** pDATParserAddress, size_t* pSize_out, FileAccessType fileAccessType) {
 
 	return 0; // CONTINUE HERE
 
@@ -1165,4 +959,28 @@ void FileIOManager::LZ2K_AttemptRawRead() {
 
 int FileIOManager::LZ2K_UncompressData(char* compressedDataBuffer, char* uncompressedDataOut, int compressedSizeMinusHeader, int uncompressedSize) {
 	return 0;
+}
+
+// attempts to set the fileHandleIndex of one of 8 available FilePointerContainers from FilePointerContainersArray
+int DATParser::LinkAvailableFilePointerContainer(int hashesStructIndex) {
+
+	FileIOManager* fiom = FileIOManager::Instance();
+	if (!fiom)
+		return -1;
+
+	RawEnterCriticalSection( fiom->GetCriticalSectionIndex() );
+
+	int availableFilePointerContainerIndex = 0;
+	for (int i = 0; this->filePointerContainersArray[i].fileHandleIndex != -1; i++) {
+		if (++availableFilePointerContainerIndex >= 8) {
+			availableFilePointerContainerIndex = -1;
+			goto EXIT;
+		}
+	}
+	this->filePointerContainersArray[availableFilePointerContainerIndex].fileHandleIndex = hashesStructIndex;
+
+EXIT:
+	RawLeaveCriticalSection( fiom->GetCriticalSectionIndex() );
+	return availableFilePointerContainerIndex;
+
 }

@@ -5,6 +5,8 @@
 #include <strings/hash.h>
 #include <strings/strings.h>
 #include <array>
+#include <vector>
+#include <string>
 
 // ==================== CONSTANTS ====================
 
@@ -44,7 +46,7 @@ struct FileHandleContainer {
 
 // for reading files compressed in some way
 struct FilePointerInfo {
-	Hashes* pHashesStruct;
+	DATParser* pDATParser;
 	DWORD dw1;
 	LARGE_INTEGER fileStartPosition;
 	LARGE_INTEGER filePointerPosition;
@@ -66,6 +68,29 @@ public:
 	char* filePointerPosition; // 0x8
 	int bSomeBool; // 0xC
 	int bIsInUse = 0; // 0x10
+};
+
+class DATParser {
+public:
+
+	int LinkAvailableFilePointerContainer(int hashesStructIndex);
+
+	int status;
+	short someInt16;
+	FileAccessType fileAccessType;
+	FilePointerContainer filePointerContainersArray[8];
+
+	std::string DATfileName;
+	std::string stringsBuffer;
+	std::vector<SomeSixteen> SomeSixteenArray;
+	std::vector<Hash> hashArray;
+	std::vector<int> hashes;
+
+	int someNum1;
+	int someNum2;
+	int numOfStringHashIndexPairs;
+	std::string stringHashIndexPairs;	
+
 };
 
 // singleton class that manages file IO
@@ -93,13 +118,13 @@ public:
 	int GetResourceBufferSize(int resourceID);
 	int DoesFileHaveFileHandle(char* fname);
 
-	unsigned __int64 CalculateStatusDependentValue(Hashes* pHashesStruct, int base);
-	int InitializeFilePointerContainerFileHandleID(Hashes* pHashesStruct, int filePointerContainerIndex);
-	Hashes* InitializeHashesStruct(char* fpath, void** pHashesStructAddress, size_t *pSize_out, FileAccessType fileAccessType);
-	int SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fname, FileAccessType fileAccessType);
+	unsigned __int64 CalculateStatusDependentValue(DATParser* pDATParser, int base);
+	int InitializeFilePointerContainerFileHandleID(DATParser* pDATParser, int filePointerContainerIndex);
+	DATParser* InitializeHashesStruct(char* fpath, void** pDATParserAddress, size_t *pSize_out, FileAccessType fileAccessType);
+	int SomeLargeFileReadingFunction(DATParser* pDATParser, char* fname, FileAccessType fileAccessType);
 
-	int SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* pHashesStruct, int a4);
-	int SIXB59E0(Hashes* pHashesStruct, char* fname, char* dataBuffer, int maxDataSize);
+	int SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParser* pDATParser, int a4);
+	int SIXB59E0(DATParser* pDATParser, char* fname, char* dataBuffer, int maxDataSize);
 
 	int AssertValidStructLinkage(int resourceID);
 
@@ -113,7 +138,7 @@ public:
 	static CRITICAL_SECTION* GetCriticalSection(int criticalSectionIndex) { return CriticalSectionsArray[criticalSectionIndex]; }
 	static CRITICAL_SECTION* GetCurrentCriticalSection() { return CriticalSectionsArray[CurrentCriticalSectionIndex]; }
 
-	static inline void SetHashesStruct(Hashes* pHashesStruct) { pSomeHashesStruct = pHashesStruct; }
+	static inline void SetHashesStruct(DATParser* pDATParser) { pSomeDATParser = pDATParser; }
 
 	void LZ2K_AttemptRawRead();
 	int  LZ2K_UncompressData(char* compressedDataBuffer, char* uncompressedDataOut, int compressedSizeMinusHeader, int uncompressedSize);
@@ -143,7 +168,7 @@ private:
 	static inline LARGE_INTEGER SomeLargeInteger{ 0 };
 
 	static inline FilePointerContainer* pSomeFilePointerContainer = 0;
-	static inline Hashes* pSomeHashesStruct = 0;
+	static inline DATParser* pSomeDATParser = 0;
 
 	static inline std::array<HANDLE, 64> FileHandlesArray{ (HANDLE)-1 };
 	static inline std::array<FileHandleContainer, 32> FileHandleContainersArray{0};

@@ -21,13 +21,13 @@ int main() {
 	// strncpy(pairsbuff,"C:\\Users\\thoma\\OneDrive\\Desktop\\shaders.h\x00\x00\x01",64);
 	// HEAP_HOOK(pairsbuff);
 
-	// Hashes* pHashesStruct = (Hashes*)GetOnHeap<Hashes>();
-	// memset(pHashesStruct,0,sizeof(Hashes));
-	// pHashesStruct->numOfStringHashIndexPairs = 1;
-	// pHashesStruct->stringHashIndexPairsBuffer = pairsbuff;
-	// HEAP_HOOK(pHashesStruct);
+	// DATParser* pDATParser = (DATParser*)GetOnHeap<Hashes>();
+	// memset(pDATParser,0,sizeof(Hashes));
+	// pDATParser->numOfStringHashIndexPairs = 1;
+	// pDATParser->stringHashIndexPairsBuffer = pairsbuff;
+	// HEAP_HOOK(pDATParser);
 
-	// fiom->SetHashesStruct(pHashesStruct);
+	// fiom->SetHashesStruct(pDATParser);
 
 	// std::cout << fiom->TopLevelFileReadingFunction(fname,textBuffer,1024) << std::endl;
 
