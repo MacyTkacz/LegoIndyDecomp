@@ -830,17 +830,16 @@ int FileIOManager::DoesFileHaveFileHandle(char* fname) {
 	DATParser* pDATParser = pSomeDATParser;
 	int stringHashIndex = GetFormattedHashIndex(pDATParser, fname);
 
-	if (pDATParser && stringHashIndex >= 0) {
-		FileIOManager::someProcessingFlag = someProcessingFlag;
-		return pDATParser->SomeSixteenArray[stringHashIndex].int3;
-	}
-	else {
+	if (!pDATParser || stringHashIndex < 0) {
 		int resourceID = SIXB44F0(fname, FileAccessType::READ, pDATParser, 1);
 		if (resourceID)
 			CloseResource(resourceID);
 		FileIOManager::someProcessingFlag = someProcessingFlag;	
 		return resourceID != 0;
 	}
+
+	FileIOManager::someProcessingFlag = someProcessingFlag;
+	return pDATParser->SomeSixteenArray[stringHashIndex].int3;
 
 }
 
