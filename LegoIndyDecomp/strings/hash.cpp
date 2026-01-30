@@ -78,6 +78,14 @@ int GetHashIndex(DATParser* pDATParser, char *str) {
 
 }
 
-int __cdecl GetFileDataIndex(DATParser* pDATParser, char* fpath) {
-	return 0;
+int __cdecl GetFormattedHashIndex(DATParser* pDATParser, char* str) {
+
+	char path[256];
+	strncpy(path,( *str == '@' ? str+4 : str ),256);
+
+	MakePathUniform(0, path);
+
+	// there's more to this function, but it's never called (LOL)
+	return GetHashIndex(pDATParser, path);
+
 }

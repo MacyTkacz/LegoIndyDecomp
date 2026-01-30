@@ -29,13 +29,9 @@
 
 // ===================== FUNCTIONS =====================
 
-// calculates the hash of path_in
-// checks whether the hash exists in struct's hashes array
-// if not, checks whether path_in is in struct's stringsDataBuffer array
-// if so, adds the hash to the hashes array
-// returns the index of path_in's hash
-int GetHashIndex(DATParser* pDATParser, char* path_in);
+// gets the index of str's hash, if any
+int GetHashIndex(DATParser* pDATParser, char* str);
 
-int GetFileDataIndex(DATParser* pDATParser, char* fpath);
+int GetFormattedHashIndex(DATParser* pDATParser, char* fpath);
 
 #endif // LEGOINDY_HASH_H

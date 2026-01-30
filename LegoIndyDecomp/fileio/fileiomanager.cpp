@@ -521,7 +521,7 @@ int FileIOManager::SomeLargeFileReadingFunction(DATParser* pDATParser, char* fna
 	if (fileAccessType)
 		return 0;
 
-	int someStructIndex = GetFileDataIndex(pDATParser, fname);
+	int someStructIndex = GetFormattedHashIndex(pDATParser, fname);
 	if (someStructIndex < 0 || !pDATParser->SomeSixteenArray[someStructIndex].int2)
 		return 0;
 
@@ -828,7 +828,7 @@ int FileIOManager::DoesFileHaveFileHandle(char* fname) {
 	FileIOManager::someProcessingFlag = 0;
 
 	DATParser* pDATParser = pSomeDATParser;
-	int stringHashIndex = GetFileDataIndex(pDATParser, fname);
+	int stringHashIndex = GetFormattedHashIndex(pDATParser, fname);
 
 	if (pDATParser && stringHashIndex >= 0) {
 		FileIOManager::someProcessingFlag = someProcessingFlag;
