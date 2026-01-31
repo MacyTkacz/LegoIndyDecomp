@@ -406,7 +406,8 @@ int FileIOManager::AssertValidStructLinkage(int resourceID) {
 
 }
 
-int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParser* pDATParser, int a4) {
+// TODO: find out wtf is happening here and rename
+int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParser* pDATParser) {
 
 	int resourceID;
 	LARGE_INTEGER newFilePointerPosition;
@@ -414,7 +415,7 @@ int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParse
 	FilePathContainer* pFilePathContainer = GetFilePathContainerFromPath(fpath);
 	if (!pFilePathContainer ) {
 
-		if (pDATParser && fileAccessType != CREATE && fileAccessType != MODIFY) {
+		if ( pDATParser && fileAccessType == FileAccessType::READ ) {
 			int resourceID = SomeLargeFileReadingFunction(pDATParser, fpath, fileAccessType);
 			if (resourceID)
 				return resourceID;
@@ -427,7 +428,7 @@ int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParse
 	char joinedFpath[256];
 	pFilePathContainer->pathJoiningFunction(pFilePathContainer, joinedFpath, fpath, 256);
 
-	if ((char)pFilePathContainer->filePathInfo.status == 1)
+	if (pFilePathContainer->filePathInfo.status == 1)
 		return RSRCID_MAX;
 
 	int fileHandleIndex = CreateFileHandle(joinedFpath, fileAccessType);
@@ -507,7 +508,7 @@ int FileIOManager::InitializeFilePointerContainerFileHandleID(DATParser* pDATPar
 		return pFilePointerContainer->fileHandleID;
 
 	// give FilePointerContainer a new fileHandleID and reset its FilePointerPosition to 0
-	int fileHandleID = SIXB44F0(const_cast<char*>(pDATParser->DATfileName.c_str()), (FileAccessType)pDATParser->fileAccessType, 0, 0);
+	int fileHandleID = SIXB44F0(const_cast<char*>(pDATParser->DATfileName.c_str()), (FileAccessType)pDATParser->fileAccessType, 0);
 	pFilePointerContainer->fileHandleID = fileHandleID;
 	pFilePointerContainer->filePointerPosition.QuadPart = 0;
 	return fileHandleID;
@@ -831,7 +832,7 @@ int FileIOManager::DoesFileHaveFileHandle(char* fname) {
 	int stringHashIndex = GetFormattedHashIndex(pDATParser, fname);
 
 	if (!pDATParser || stringHashIndex < 0) {
-		int resourceID = SIXB44F0(fname, FileAccessType::READ, pDATParser, 1);
+		int resourceID = SIXB44F0(fname, FileAccessType::READ, pDATParser);
 		if (resourceID)
 			CloseResource(resourceID);
 		FileIOManager::someProcessingFlag = someProcessingFlag;	

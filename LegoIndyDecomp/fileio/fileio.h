@@ -123,7 +123,7 @@ public:
 	DATParser* InitializeHashesStruct(char* fpath, void** pDATParserAddress, size_t *pSize_out, FileAccessType fileAccessType);
 	int SomeLargeFileReadingFunction(DATParser* pDATParser, char* fname, FileAccessType fileAccessType);
 
-	int SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParser* pDATParser, int a4);
+	int SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParser* pDATParser);
 	int SIXB59E0(DATParser* pDATParser, char* fname, char* dataBuffer, int maxDataSize);
 
 	int AssertValidStructLinkage(int resourceID);
