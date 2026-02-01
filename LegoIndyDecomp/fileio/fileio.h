@@ -118,13 +118,13 @@ public:
 	int GetResourceBufferSize(int resourceID);
 	int DoesFileHaveFileHandle(char* fname);
 
-	unsigned __int64 CalculateStatusDependentValue(DATParser* pDATParser, int base);
+	unsigned __int64 CalculateDataStartPosition(DATParser& DATParser, int base);
 	int InitializeFilePointerContainerFileHandleID(DATParser* pDATParser, int filePointerContainerIndex);
 	DATParser* InitializeHashesStruct(char* fpath, void** pDATParserAddress, size_t *pSize_out, FileAccessType fileAccessType);
-	int SomeLargeFileReadingFunction(DATParser* pDATParser, char* fname, FileAccessType fileAccessType);
+	int SomeLargeFileReadingFunction(DATParser& DATParser, char* fname, FileAccessType fileAccessType);
 
 	int SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParser* pDATParser);
-	int SIXB59E0(DATParser* pDATParser, char* fname, char* dataBuffer, int maxDataSize);
+	int SIXB59E0(DATParser& DATParser, char* fname, char* dataBuffer, int maxDataSize);
 
 	int AssertValidStructLinkage(int resourceID);
 

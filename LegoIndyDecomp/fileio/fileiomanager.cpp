@@ -416,7 +416,7 @@ int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParse
 	if (!pFilePathContainer ) {
 
 		if ( pDATParser && fileAccessType == FileAccessType::READ ) {
-			int resourceID = SomeLargeFileReadingFunction(pDATParser, fpath, fileAccessType);
+			int resourceID = SomeLargeFileReadingFunction(*pDATParser, fpath, fileAccessType);
 			if (resourceID)
 				return resourceID;
 		}
@@ -492,11 +492,11 @@ int FileIOManager::GetAvailableFilePointerInfoIndex() {
 
 }
 
-// if pDATParser->status <= -2 return SomeLargeInteger+(base*256), else return SomeLargeInteger+base
-unsigned __int64 FileIOManager::CalculateStatusDependentValue(DATParser* pDATParser, int base) {
+// returns chunkNumber*256 if DATParser.status <= -2
+unsigned __int64 FileIOManager::CalculateDataStartPosition(DATParser& DATParser, int chunkNumber) {
 
-	bool flag = pDATParser->status <= -2;
-	return SomeLargeInteger.QuadPart + ((__int64)base << (flag ? 8 : 0));
+	bool flag = DATParser.status <= -2;
+	return SomeLargeInteger.QuadPart + (static_cast<__int64>(chunkNumber) << (flag ? 8 : 0));
 
 }
 
@@ -516,39 +516,39 @@ int FileIOManager::InitializeFilePointerContainerFileHandleID(DATParser* pDATPar
 }
 
 // initializes and returns a FilePointerInfo
-int FileIOManager::SomeLargeFileReadingFunction(DATParser* pDATParser, char* fname, FileAccessType fileAccessType) {
+int FileIOManager::SomeLargeFileReadingFunction(DATParser& DATParser, char* fname, FileAccessType fileAccessType) {
 
 	// return if not READ
 	if (fileAccessType)
 		return 0;
 
-	int someStructIndex = GetFormattedHashIndex(pDATParser, fname);
-	if (someStructIndex < 0 || !pDATParser->SomeSixteenArray[someStructIndex].int2)
+	int someStructIndex = GetFormattedHashIndex(&DATParser, fname);
+	if (someStructIndex < 0 || !DATParser.SomeSixteenArray[someStructIndex].int2)
 		return 0;
 
 	int filePointerInfoIndex = GetAvailableFilePointerInfoIndex();
 	if (filePointerInfoIndex == -1)
 		return 0;
 
-	int filePointerContainerIndex = pDATParser->LinkAvailableFilePointerContainer(filePointerInfoIndex);
+	int filePointerContainerIndex = DATParser.LinkAvailableFilePointerContainer(filePointerInfoIndex);
 	if (filePointerContainerIndex == -1) {
 		FilePointerInfoArray[filePointerInfoIndex].bIsInUse = 0;
 		return 0;
 	}
 
 	FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[filePointerInfoIndex];
-	FilePointerContainer* pFilePointerContainer = &pDATParser->filePointerContainersArray[filePointerContainerIndex];
+	FilePointerContainer* pFilePointerContainer = &DATParser.filePointerContainersArray[filePointerContainerIndex];
 
-	InitializeFilePointerContainerFileHandleID(pDATParser, filePointerContainerIndex);
-	pFilePointerInfo->pDATParser = pDATParser;
+	InitializeFilePointerContainerFileHandleID(&DATParser, filePointerContainerIndex);
+	pFilePointerInfo->pDATParser = &DATParser;
 
-	LARGE_INTEGER fileStart = ToLargeInt(CalculateStatusDependentValue(pDATParser, pDATParser->SomeSixteenArray[someStructIndex].int1));
+	LARGE_INTEGER fileStart = ToLargeInt( CalculateDataStartPosition(DATParser, DATParser.SomeSixteenArray[someStructIndex].chunkNumber) );
 	
 	pFilePointerInfo->fileStartPosition = fileStart;
 	pFilePointerInfo->filePointerPosition = fileStart;
-	pFilePointerInfo->fileDataSize = pDATParser->SomeSixteenArray[someStructIndex].int2;
-	pFilePointerInfo->fileDataSizeWhenFileTypeIsNonzero = pDATParser->SomeSixteenArray[someStructIndex].int3;
-	pFilePointerInfo->fileType = static_cast<FileType>( pDATParser->SomeSixteenArray[someStructIndex].int4 );
+	pFilePointerInfo->fileDataSize = DATParser.SomeSixteenArray[someStructIndex].int2;
+	pFilePointerInfo->fileDataSizeWhenFileTypeIsNonzero = DATParser.SomeSixteenArray[someStructIndex].int3;
+	pFilePointerInfo->fileType = static_cast<FileType>( DATParser.SomeSixteenArray[someStructIndex].int4 );
 	pFilePointerInfo->filePointerContainerIndex = filePointerContainerIndex;
 	pFilePointerContainer->filePointerPosition = fileStart;
 
@@ -845,15 +845,15 @@ int FileIOManager::DoesFileHaveFileHandle(char* fname) {
 }
 
 // reads data and updates filePointerPosition for FilePointerInfo and FilePointerContainer
-int FileIOManager::SIXB59E0(DATParser* pDATParser, char* fname, char* dataBuffer, int maxDataSize) {
+int FileIOManager::SIXB59E0(DATParser& DATParser, char* fname, char* dataBuffer, int maxDataSize) {
 
 	int dataSize = 0;
 
-	int resourceID = SomeLargeFileReadingFunction(pDATParser, fname, FileAccessType::READ);
+	int resourceID = SomeLargeFileReadingFunction(DATParser, fname, FileAccessType::READ);
 	if (!resourceID)
 		return 0;
 
-	if (pDATParser->fileAccessType == FileAccessType::OTHER)
+	if (DATParser.fileAccessType == FileAccessType::OTHER)
 		while ( AssertValidStructLinkage(resourceID) );
 
 
@@ -910,7 +910,7 @@ int FileIOManager::SIXB59E0(DATParser* pDATParser, char* fname, char* dataBuffer
 
 	}
 
-	if (pDATParser->fileAccessType == FileAccessType::OTHER)
+	if (DATParser.fileAccessType == FileAccessType::OTHER)
 		while (AssertValidStructLinkage(resourceID));
 
 	CloseResource(resourceID);
@@ -924,7 +924,7 @@ int FileIOManager::TopLevelFileReadingFunction(char* fname, char* textBuffer, in
 	fileReadErrorCode = FileReadErrorCode::NONE;
 
 	if (pSomeDATParser) {
-		if ( result = SIXB59E0(pSomeDATParser,fname,textBuffer,maxDataSize), result )
+		if ( result = SIXB59E0(*pSomeDATParser,fname,textBuffer,maxDataSize), result )
 			return result;
 	}
 
