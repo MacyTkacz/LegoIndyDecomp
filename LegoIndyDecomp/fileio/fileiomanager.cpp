@@ -496,7 +496,7 @@ int FileIOManager::GetAvailableFilePointerInfoIndex() {
 unsigned __int64 FileIOManager::CalculateDataStartPosition(DATParser& DATParser, int chunkNumber) {
 
 	bool flag = DATParser.status <= -2;
-	return SomeLargeInteger.QuadPart + (static_cast<__int64>(chunkNumber) << (flag ? 8 : 0));
+	return FileCursorDelta.QuadPart + (static_cast<__int64>(chunkNumber) << (flag ? 8 : 0));
 
 }
 
@@ -936,9 +936,69 @@ int FileIOManager::TopLevelFileReadingFunction(char* fname, char* textBuffer, in
 
 }
 
-DATParser* FileIOManager::InitializeHashesStruct(char* fpath, void** pDATParserAddress, size_t* pSize_out, FileAccessType fileAccessType) {
+DATParser* FileIOManager::InitializeDATParser(char* fpath, void** ppEnd_out, size_t* pSize_out, FileAccessType fileAccessType) {
 
-	return 0; // CONTINUE HERE
+	int resourceID = SIXB44F0(fpath, fileAccessType, 0);
+	if (!resourceID)
+		return 0;
+
+	int someProcessingFlag = FileIOManager::someProcessingFlag;
+
+	bool shouldAssertValidStructLinkage = fileAccessType == FileAccessType::OTHER;
+	if (shouldAssertValidStructLinkage)
+		while ( AssertValidStructLinkage(resourceID) );
+
+	if ( FileCursorDelta.LowPart )
+		SetFilePointer(resourceID, FileCursorDelta, FILE_BEGIN);
+
+	FileHandleContainer* pFileHandleContainer;
+	FileBufferContainer* pFileBufferContainer;
+	FilePointerContainer* pFilePointerContainer;
+	FilePointerInfo* pFilePointerInfo;
+
+	__int64 additionalStructLength;
+	__int64 filePointer = FileCursorDelta.QuadPart;
+	while ( ReadResourceData(resourceID,reinterpret_cast<char*>(&additionalStructLength),8) < 0 ) {
+		do {
+
+			if (resourceID >= RSRCID_MAX)
+				break;
+
+			FILERESOURCETYPESWITCH(resourceID)
+				CASE_FILEHANDLECONTAINER()
+					pFileHandleContainer = &FileHandleContainersArray[resourceID - 1];
+					if (pFileHandleContainer->someProcessingFlag)
+						pFileHandleContainer->filePointerPosition.QuadPart = FileCursorDelta.QuadPart;
+					else
+						filePointer = RawSetFilePointer(resourceID-1,FileCursorDelta,FILE_BEGIN).QuadPart;
+					break;
+				}
+				CASE_FILEBUFFERCONTAINER()
+					pFileBufferContainer = &FileBufferContainersArray[resourceID - RSRCID_FILEBUFFERCONTAINERSBASE];
+					char* textBuffer = pFileBufferContainer->textBuffer;
+					char* offset = &textBuffer[FileCursorDelta.QuadPart];
+					pFileBufferContainer->filePointerPosition = offset;
+					filePointer = offset - textBuffer;
+					break;
+				}
+				CASE_FILEPOINTERINFO()
+					pFilePointerInfo = &FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE];
+					pFilePointerContainer = &pFilePointerInfo->pDATParser->filePointerContainersArray[ pFilePointerInfo->filePointerContainerIndex ];
+					LARGE_INTEGER distToMove = ToLargeInt( pFilePointerInfo->fileStartPosition.QuadPart + FileCursorDelta.QuadPart );
+					filePointer = SetFilePointer(pFilePointerContainer->fileHandleID,distToMove,FILE_BEGIN).QuadPart;
+					pFilePointerInfo->filePointerPosition.QuadPart = filePointer;
+					pFilePointerContainer->filePointerPosition.QuadPart = filePointer;
+				}
+			}
+
+		}
+		while( filePointer < 0 );
+	}
+
+	if (shouldAssertValidStructLinkage)
+		while ( AssertValidStructLinkage(resourceID) );
+
+	return nullptr;
 
 }
 

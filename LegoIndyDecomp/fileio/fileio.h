@@ -120,7 +120,7 @@ public:
 
 	unsigned __int64 CalculateDataStartPosition(DATParser& DATParser, int base);
 	int InitializeFilePointerContainerFileHandleID(DATParser* pDATParser, int filePointerContainerIndex);
-	DATParser* InitializeHashesStruct(char* fpath, void** pDATParserAddress, size_t *pSize_out, FileAccessType fileAccessType);
+	DATParser* InitializeDATParser(char* fpath, void** ppEnd_out, size_t* pSize_out, FileAccessType fileAccessType);
 	int SomeLargeFileReadingFunction(DATParser& DATParser, char* fname, FileAccessType fileAccessType);
 
 	int SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParser* pDATParser);
@@ -165,7 +165,7 @@ private:
 	static inline int LZ2KCompressedFileSizeMinusHeader = 0;
 
 	static inline LARGE_INTEGER SomeFileStartPosition{ 0 };
-	static inline LARGE_INTEGER SomeLargeInteger{ 0 };
+	static inline LARGE_INTEGER FileCursorDelta{ 0 };
 
 	static inline FilePointerContainer* pSomeFilePointerContainer = 0;
 	static inline DATParser* pSomeDATParser = 0;
