@@ -126,8 +126,6 @@ public:
 	int SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParser* pDATParser);
 	int SIXB59E0(DATParser& DATParser, char* fname, char* dataBuffer, int maxDataSize);
 
-	int AssertValidStructLinkage(int resourceID);
-
 	LARGE_INTEGER SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod);
 	LARGE_INTEGER SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, DWORD moveMethod);
 	LARGE_INTEGER SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, DWORD moveMethod);

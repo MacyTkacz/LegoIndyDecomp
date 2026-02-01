@@ -389,23 +389,6 @@ FilePathContainer* FileIOManager::GetFilePathContainerFromPath(char* fpath) {
 
 }
 
-// this function can either return 0 or error out
-// my best guess is that this is an assertion for a proper linkage between a FilePointerInfo and a FilePointerContainer?
-// note: in the codebase, this is only ever run after a check for a FileAccessType of 3
-int FileIOManager::AssertValidStructLinkage(int resourceID) {
-
-	int i = resourceID;
-	while (i < RSRCID_FILEBUFFERCONTAINERSBASE) {
-		FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[i - RSRCID_FILEPOINTERINFOSBASE];
-		int filePointerContainerIndex = pFilePointerInfo->filePointerContainerIndex;
-		i = pFilePointerInfo->pDATParser->filePointerContainersArray[filePointerContainerIndex].fileHandleID;
-		if (i < RSRCID_FILEPOINTERINFOSBASE)
-			break;
-	}
-	return 0;
-
-}
-
 // TODO: find out wtf is happening here and rename
 int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParser* pDATParser) {
 
@@ -452,20 +435,14 @@ int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParse
 				break;
 		}
 		FileHandleContainersArray[fileHandleIndex].fileEndPosition = newFilePointerPosition;
-		if (fileAccessType == ( FileAccessType::MODIFY | FileAccessType::CREATE ))
-			while (AssertValidStructLinkage(fileHandleIndex+1));
 		while (true) {
 			newFilePointerPosition = SetFilePointer(fileHandleIndex + 1, LARGE_INTEGER{ 0 }, FILE_BEGIN);
 			if (newFilePointerPosition.HighPart >= 0)
 				break;
 		}
-		if (fileAccessType == ( FileAccessType::MODIFY | FileAccessType::CREATE ))
-			while (AssertValidStructLinkage(fileHandleIndex+1));
-		else {
 LABEL_25:
-			if (fileAccessType == FileAccessType::READ)
-				FileHandleContainersArray[fileHandleIndex].someProcessingFlag = someProcessingFlag;
-		}
+		if (fileAccessType == FileAccessType::READ)
+			FileHandleContainersArray[fileHandleIndex].someProcessingFlag = someProcessingFlag;
 	}
 	FileHandleContainersArray[fileHandleIndex].pSomething = 0;
 	return fileHandleIndex + 1;
@@ -853,10 +830,6 @@ int FileIOManager::SIXB59E0(DATParser& DATParser, char* fname, char* dataBuffer,
 	if (!resourceID)
 		return 0;
 
-	if (DATParser.fileAccessType == FileAccessType::OTHER)
-		while ( AssertValidStructLinkage(resourceID) );
-
-
 	FilePointerInfo* pFilePointerInfo = &FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE];
 	if (pFilePointerInfo->fileType)
 		dataSize = pFilePointerInfo->fileDataSizeWhenFileTypeIsNonzero;
@@ -910,9 +883,6 @@ int FileIOManager::SIXB59E0(DATParser& DATParser, char* fname, char* dataBuffer,
 
 	}
 
-	if (DATParser.fileAccessType == FileAccessType::OTHER)
-		while (AssertValidStructLinkage(resourceID));
-
 	CloseResource(resourceID);
 	return dataSize;
 
@@ -943,10 +913,6 @@ DATParser* FileIOManager::InitializeDATParser(char* fpath, void** ppEnd_out, siz
 		return 0;
 
 	int someProcessingFlag = FileIOManager::someProcessingFlag;
-
-	bool shouldAssertValidStructLinkage = fileAccessType == FileAccessType::OTHER;
-	if (shouldAssertValidStructLinkage)
-		while ( AssertValidStructLinkage(resourceID) );
 
 	if ( FileCursorDelta.LowPart )
 		SetFilePointer(resourceID, FileCursorDelta, FILE_BEGIN);
@@ -994,9 +960,6 @@ DATParser* FileIOManager::InitializeDATParser(char* fpath, void** ppEnd_out, siz
 		}
 		while( filePointer < 0 );
 	}
-
-	if (shouldAssertValidStructLinkage)
-		while ( AssertValidStructLinkage(resourceID) );
 
 	return nullptr;
 
