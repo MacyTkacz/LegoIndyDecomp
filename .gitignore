@@ -1,6 +1,6 @@
 out
+build
 .vscode
 *.exe.id*
 *.exe.nam
 *.exe.til
-build

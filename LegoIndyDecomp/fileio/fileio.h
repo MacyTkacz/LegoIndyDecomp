@@ -37,7 +37,7 @@ struct FileHandleContainer {
 	LARGE_INTEGER fileEndPosition;
 	LARGE_INTEGER someLargeInt2;
 	int fileDataLength;
-	int someProcessingFlag; // if false, always read from FILE_BEGIN (I think?)
+	int bSomeBool; // if false, always read from FILE_BEGIN (I think?)
 	void* pSomething;
 	char pad3[4];
 	FileAccessType fileAccessType;

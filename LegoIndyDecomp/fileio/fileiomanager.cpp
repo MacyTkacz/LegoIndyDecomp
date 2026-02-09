@@ -282,7 +282,7 @@ LARGE_INTEGER FileIOManager::SetFilePointer(FileBufferContainer* pFileBufferCont
 
 LARGE_INTEGER FileIOManager::SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, DWORD moveMethod) {
 
-	if (!pFileHandleContainer->someProcessingFlag)
+	if (!pFileHandleContainer->bSomeBool)
 		return RawSetFilePointer(pFileHandleContainer->fileHandleIndex, distToMove, moveMethod);
 
 	switch (moveMethod) {
@@ -442,7 +442,7 @@ int FileIOManager::SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParse
 		}
 LABEL_25:
 		if (fileAccessType == FileAccessType::READ)
-			FileHandleContainersArray[fileHandleIndex].someProcessingFlag = someProcessingFlag;
+			FileHandleContainersArray[fileHandleIndex].bSomeBool = someProcessingFlag;
 	}
 	FileHandleContainersArray[fileHandleIndex].pSomething = 0;
 	return fileHandleIndex + 1;
@@ -644,7 +644,7 @@ int FileIOManager::ReadResourceData(int resourceID, char* textBuffer, int number
 	}
 	
 	FileHandleContainer* pFileHandleContainer = &FileHandleContainersArray[resourceID - 1];
-	if (!pFileHandleContainer->someProcessingFlag)
+	if (!pFileHandleContainer->bSomeBool)
 		return RawRead(resourceID-1, textBuffer, numberOfBytesToRead);
 
 	if (!pFileHandleContainer->pFileDataContainer)
@@ -856,7 +856,7 @@ int FileIOManager::SIXB59E0(DATParser& DATParser, char* fname, char* dataBuffer,
 			if (resourceID < RSRCID_FILEBUFFERCONTAINERSBASE) {
 				int index = resourceID - 1;
 				FileHandleContainer* pFileHandleContainer = &FileHandleContainersArray[index];
-				if (pFileHandleContainer->someProcessingFlag) {
+				if (pFileHandleContainer->bSomeBool) {
 					pFileHandleContainer->filePointerPosition.QuadPart = fileStartPosition;
 				}
 				else {
@@ -923,8 +923,10 @@ DATParser* FileIOManager::InitializeDATParser(char* fpath, void** ppEnd_out, siz
 	FilePointerInfo* pFilePointerInfo;
 
 	__int64 additionalStructLength;
-	__int64 filePointer = FileCursorDelta.QuadPart;
+	// ensure additionalStructLength is read
 	while ( ReadResourceData(resourceID,reinterpret_cast<char*>(&additionalStructLength),8) < 0 ) {
+
+		__int64 filePointerPosition = FileCursorDelta.QuadPart;
 		do {
 
 			if (resourceID >= RSRCID_MAX)
@@ -933,10 +935,10 @@ DATParser* FileIOManager::InitializeDATParser(char* fpath, void** ppEnd_out, siz
 			FILERESOURCETYPESWITCH(resourceID)
 				CASE_FILEHANDLECONTAINER()
 					pFileHandleContainer = &FileHandleContainersArray[resourceID - 1];
-					if (pFileHandleContainer->someProcessingFlag)
+					if (pFileHandleContainer->bSomeBool)
 						pFileHandleContainer->filePointerPosition.QuadPart = FileCursorDelta.QuadPart;
 					else
-						filePointer = RawSetFilePointer(resourceID-1,FileCursorDelta,FILE_BEGIN).QuadPart;
+						filePointerPosition = RawSetFilePointer(resourceID-1,FileCursorDelta,FILE_BEGIN).QuadPart;
 					break;
 				}
 				CASE_FILEBUFFERCONTAINER()
@@ -944,22 +946,61 @@ DATParser* FileIOManager::InitializeDATParser(char* fpath, void** ppEnd_out, siz
 					char* textBuffer = pFileBufferContainer->textBuffer;
 					char* offset = &textBuffer[FileCursorDelta.QuadPart];
 					pFileBufferContainer->filePointerPosition = offset;
-					filePointer = offset - textBuffer;
+					filePointerPosition = offset - textBuffer;
 					break;
 				}
 				CASE_FILEPOINTERINFO()
 					pFilePointerInfo = &FilePointerInfoArray[resourceID - RSRCID_FILEPOINTERINFOSBASE];
 					pFilePointerContainer = &pFilePointerInfo->pDATParser->filePointerContainersArray[ pFilePointerInfo->filePointerContainerIndex ];
 					LARGE_INTEGER distToMove = ToLargeInt( pFilePointerInfo->fileStartPosition.QuadPart + FileCursorDelta.QuadPart );
-					filePointer = SetFilePointer(pFilePointerContainer->fileHandleID,distToMove,FILE_BEGIN).QuadPart;
-					pFilePointerInfo->filePointerPosition.QuadPart = filePointer;
-					pFilePointerContainer->filePointerPosition.QuadPart = filePointer;
+					filePointerPosition = SetFilePointer(pFilePointerContainer->fileHandleID,distToMove,FILE_BEGIN).QuadPart;
+					pFilePointerInfo->filePointerPosition.QuadPart = filePointerPosition;
+					pFilePointerContainer->filePointerPosition.QuadPart = filePointerPosition;
 				}
 			}
 
 		}
-		while( filePointer < 0 );
+		while( filePointerPosition < 0 );
 	}
+
+	if ( additionalStructLength < 0 )
+		additionalStructLength *= -256;
+
+	__int64 bigsum = additionalStructLength + FileCursorDelta.QuadPart;
+
+	// WHAT ARE WE DOING HERE??
+	if (resourceID < RSRCID_MAX) {
+		__int64 newFilePointerPosition = bigsum;
+		do {
+			FILERESOURCETYPESWITCH(resourceID)
+				CASE_FILEHANDLECONTAINER()
+					if (pFileHandleContainer->bSomeBool) {
+						pFileHandleContainer->filePointerPosition.QuadPart = bigsum;
+					}
+					else
+						newFilePointerPosition = RawSetFilePointer(resourceID-1,ToLargeInt(bigsum),FILE_BEGIN).QuadPart;
+					break;
+				}
+				CASE_FILEBUFFERCONTAINER()
+					pFileBufferContainer->filePointerPosition = &pFileBufferContainer->textBuffer[bigsum];
+					break;
+				}
+				CASE_FILEPOINTERINFO()
+					LARGE_INTEGER distToMove = ToLargeInt( pFilePointerInfo->fileStartPosition.QuadPart + bigsum );
+					newFilePointerPosition = SetFilePointer(pFilePointerContainer->fileHandleID,distToMove,FILE_BEGIN).QuadPart;
+					pFilePointerInfo->filePointerPosition.QuadPart = newFilePointerPosition;
+					pFilePointerContainer->filePointerPosition.QuadPart = newFilePointerPosition;
+					break;
+				}
+			}
+		}
+		while( newFilePointerPosition < 0 );
+	}
+
+	char* fpathJoined;
+	DefaultFilePathContainer.pathJoiningFunction(&DefaultFilePathContainer,fpathJoined,fpath,256);
+	// round up to next 16-byte chunk to ensure null-termination
+	int pathLength = ( _strlen(fpathJoined) + 16 ) & -16;
 
 	return nullptr;
 
