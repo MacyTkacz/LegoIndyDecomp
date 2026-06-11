@@ -1,30 +1,27 @@
 #include "strings.h"
 #include <strings/std.h>
 
-char *__cdecl MakePathUniform(PathTypeInfo *pathTypeInfo, char *path) {
-  char *current_path_offset; // eax
-  char separating_char; // bl
-  char *current_write_offset; // ecx
+char *__cdecl MakePathUniform(FilePathInfo *filePathInfo, char *path) {
 
-  current_path_offset = &pathTypeInfo->lastCharWritten;
-  if (pathTypeInfo)
-      separating_char = pathTypeInfo->separator;
-  else
-    separating_char = 92;                       // '\'
+  char *currentPathOffset;
+  char *currentWriteOffset;
+  char separatingChar = '\\';
+
+  if (filePathInfo)
+      separatingChar = filePathInfo->separator;
   if ( GlobalPathType ) {
-    for ( current_path_offset = path; *current_path_offset; ++current_path_offset ) {
-      // '/' or '\'
-      if ( *current_path_offset == 92 || *current_path_offset == 47 )
-        *current_path_offset = separating_char;
+    for ( currentPathOffset = path; *currentPathOffset; ++currentPathOffset ) {
+      if ( *currentPathOffset == '/' || *currentPathOffset == '\\')
+        *currentPathOffset = separatingChar;
     }
   }
   else {
-    for ( current_write_offset = path; *current_write_offset; ++current_write_offset ) {
-      *current_path_offset = *current_write_offset;
-      switch ( *current_write_offset ) {
+    for ( currentWriteOffset = path; *currentWriteOffset; ++currentWriteOffset ) {
+      *currentPathOffset = *currentWriteOffset;
+      switch ( *currentWriteOffset ) {
         case '/':
         case '\\':
-          *current_write_offset = separating_char;
+          *currentWriteOffset = separatingChar;
           break;
         case 'a':
         case 'b':
@@ -52,15 +49,15 @@ char *__cdecl MakePathUniform(PathTypeInfo *pathTypeInfo, char *path) {
         case 'x':
         case 'y':
         case 'z':
-          *current_path_offset = *current_path_offset - 32;
-          *current_write_offset = *current_path_offset;
+          *currentPathOffset = *currentPathOffset - 32;
+          *currentWriteOffset = *currentPathOffset;
           break;
         default:
           continue;
       }
     }
   }
-  return current_path_offset;
+  return currentPathOffset;
 }
 
 char *__cdecl GetStringStartingWith(char *str, const char *starts_with) {
@@ -69,18 +66,17 @@ char *__cdecl GetStringStartingWith(char *str, const char *starts_with) {
   char *current_separator_offset; // ecx
   char current_separator_char; // dl
 
-  char* target = const_cast<char*>(starts_with);
+  int targetLength = _strlen(const_cast<char*>(starts_with));
+  char target[targetLength];
+  _strcpy(target,const_cast<char*>(starts_with));
 
   result = str;
   if ( !*str )
     return 0;
-  for ( offset_into_string = str - target; ; ++offset_into_string )
-  {
+  for ( offset_into_string = str - target; ; ++offset_into_string ) {
     current_separator_offset = target;
-    if ( *target )
-    {
-      while ( 1 )
-      {
+    if ( *target ) {
+      while ( 1 ) {
         current_separator_char = current_separator_offset[offset_into_string];
         if ( !current_separator_char || current_separator_char != *current_separator_offset )
           break;
@@ -96,7 +92,7 @@ char *__cdecl GetStringStartingWith(char *str, const char *starts_with) {
   return result;
 }
 
-char* __cdecl ResolveRelativePathSpecifier(PathTypeInfo* pPathTypeInfo, char* path) {
+char* __cdecl ResolveRelativePathSpecifier(FilePathInfo* pFilePathInfo, char* path) {
 
     char* result;
     char* currentPathOffset;
@@ -106,7 +102,7 @@ char* __cdecl ResolveRelativePathSpecifier(PathTypeInfo* pPathTypeInfo, char* pa
     result = path;
     for (currentPathOffset = path; *currentPathOffset; ++result) {
         
-        separator = pPathTypeInfo->separator;
+        separator = pFilePathInfo->separator;
         if (currentPathOffset[0] == separator &&
             currentPathOffset[1] == '.' &&
             currentPathOffset[2] == '.' &&
@@ -180,8 +176,8 @@ PATH_IS_ABSOLUTE:
 
 LABEL_8:
     structStr1Length = _strlen(pFilePathContainer->drivePrefix);
-    MakePathUniform(&pFilePathContainer->pathTypeInfo, &charBuffer[structStr1Length]);
-    ResolveRelativePathSpecifier(&pFilePathContainer->pathTypeInfo, charBuffer);
+    MakePathUniform(&pFilePathContainer->filePathInfo, &charBuffer[structStr1Length]);
+    ResolveRelativePathSpecifier(&pFilePathContainer->filePathInfo, charBuffer);
 
     if (_strlen(charBuffer) >= size)
         return 0;

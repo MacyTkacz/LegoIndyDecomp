@@ -5,14 +5,15 @@
 
 enum PathType { UPPERCASE, MIXEDCASE };
 
-struct PathTypeInfo {
-	char lastCharWritten;
-	char padding[15];
+struct FilePathInfo {
+    int status;
+	char pad1[8];
+	int someInt;
 	char separator;
 };
 
 struct FilePathContainer {
-	PathTypeInfo pathTypeInfo; // 0x00
+	FilePathInfo filePathInfo; // 0x00
 	char pad1[35]; // 0x11
 	char path[16]; // 0x34
 	int pathLength; // 0x44
@@ -33,14 +34,14 @@ inline PathType GlobalPathType = PathType::MIXEDCASE;
 
 // ===================== FUNCTIONS =====================
 
-// mutates path, replacing every instance of a back or forward slash with pathTypeInfo->separator ('\' if pathTypeInfo is NULL)
-char* __cdecl MakePathUniform(PathTypeInfo* pathTypeInfo, char* path);
+// mutates path, replacing every instance of a back or forward slash with filePathInfo->separator ('\' if filePathInfo is NULL)
+char* __cdecl MakePathUniform(FilePathInfo* filePathInfo, char* path);
 
 // returns pointer into str at first found instance of starts_with (inclusive)
 char* __cdecl GetStringStartingWith(char* str, const char* starts_with);
 
 // resolves a single "/../" in a path, e.g. "C:/files/../a.txt" -> "C:/a.txt"
-char* __cdecl ResolveRelativePathSpecifier(PathTypeInfo* pPathTypeInfo, char* path);
+char* __cdecl ResolveRelativePathSpecifier(FilePathInfo* pFilePathInfo, char* path);
 
 //if fpath is absolute:
 //   OUTPUT fpath

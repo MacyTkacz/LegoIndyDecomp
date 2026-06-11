@@ -1,12 +1,24 @@
 #ifndef LEGOINDY_FILEIO_H
 #define LEGOINDY_FILEIO_H
 
-#include <Windows.h>
 #include <strings/hash.h>
+#include <strings/strings.h>
+#include <array>
+#include <vector>
+#include <string>
+
+// ==================== CONSTANTS ====================
+
+// resource ID reference values
+constexpr int RSRCID_FILEHANDLECONTAINERSBASE = 0;
+constexpr int RSRCID_FILEBUFFERCONTAINERSBASE = (1<<10);
+constexpr int RSRCID_FILEPOINTERINFOSBASE     = (1<<11);
+constexpr int RSRCID_MAX					  = (1<<12);
 
 // ===================== STRUCTS =====================
 
 enum FileAccessType { READ, CREATE, MODIFY, OTHER };
+enum FileReadErrorCode { HANDLE_CREATION_FAILED_1 = -3, HANDLE_CREATION_FAILED_2, OVERFLOW, NONE };
 
 struct FileHandleContainer;
 struct FileDataContainer {
@@ -15,57 +27,39 @@ struct FileDataContainer {
 	char dataBuffer[1024];
 };
 
+// for reading raw file data from a file HANDLE, most basic of the resource types
 struct FileHandleContainer {
 	int fileHandleIndex;
 	char pad1[4];
 	LARGE_INTEGER filePointerPosition;
-	char pad2[8];
+	LARGE_INTEGER someLargeInt1;
 	LARGE_INTEGER fileEndPosition;
+	LARGE_INTEGER someLargeInt2;
 	int fileDataLength;
-	int bCanFileBeReadNonsequentially; // if false, always read from FILE_BEGIN (I think?)
+	int bSomeBool; // if false, always read from FILE_BEGIN (I think?)
 	void* pSomething;
 	char pad3[4];
 	FileAccessType fileAccessType;
 	FileDataContainer* pFileDataContainer;
 };
 
+// for reading files compressed in some way
 struct FilePointerInfo {
-	Hashes* pHashesStruct;
-	DWORD dw1;
+	DATParser* pDATParser;
+	long dw1;
 	LARGE_INTEGER fileStartPosition;
 	LARGE_INTEGER filePointerPosition;
-	DWORD fileDataSize;
-	DWORD fileDataSizeWhen0x28isNonzero;
+	long fileDataSize;
+	long fileDataSizeWhenFileTypeIsNonzero;
 	int filePointerContainerIndex;
-	DWORD bIsInUse;
-	DWORD bIsRelative;
-	DWORD dw4;
-};
-
-struct PathTypeInfo {
-	int status1;
-	char pad1[12];
-	char separator;
-};
-
-struct FilePathContainer {
-	PathTypeInfo pathTypeInfo;
-	char pad1[35];
-	char absolutePath[16];
-	int pathLength;
-	char pad2[4];
-	char drivePrefix[16];
-	char pad3[16];
-	char someStr[32];
-	char pad4[32];
-	char relativePath[16];
-	char pad5[368];
-	int (*pathJoiningFunction)(FilePathContainer *, char *fpath_out, char *fpath_in, int size);
-    int (*func2)(FilePathContainer *);
+	long bIsInUse;
+	FileType fileType;
+	long dw4;
 };
 
 // ===================== CLASSES =====================
 
+// for reading wide char file data
 class FileBufferContainer {
 public:
 	char* textBuffer; // 0x0
@@ -75,75 +69,141 @@ public:
 	int bIsInUse = 0; // 0x10
 };
 
+class DATParser {
+public:
+
+	int LinkAvailableFilePointerContainer(int hashesStructIndex);
+
+	int status;
+	short someInt16;
+	FileAccessType fileAccessType;
+	FilePointerContainer filePointerContainersArray[8];
+	std::string DATfileName;
+
+	int someSixteenArrayStatus;
+	std::vector<SomeSixteen> SomeSixteenArray;
+
+	std::vector<Hash> hashArray;
+
+	std::string stringsBuffer;
+
+	std::vector<int> hashes;
+
+	int someNum1;
+	int someNum2;
+	int numOfStringHashIndexPairs;
+	std::string stringHashIndexPairs;	
+
+	char rawPayload[0x10000];
+
+private:
+
+	// parse the rawPayload into its constituent types and store
+	void ParsePayload();
+
+};
+
 // singleton class that manages file IO
 class FileIOManager {
 public:
 	FileIOManager();
 	static FileIOManager* Instance();
 
+	int TopLevelFileReadingFunction(char* fname, char* textBuffer, int maxDataSize);
+
+	static FileResourceType GetResourceType(int resourceID);
+
 	// reads file data into an available FileDataContainer
 	int Read(FileHandleContainer* pFileHandleContainer);
-	int AdvanceCriticalSection();
 	int CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType);
 	bool CloseFileHandle(int fileHandleIndex);
 	void CloseResource(int resourceID);
-	int FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int someValue);
+	int ReadResourceData(int resourceID, char* textBuffer, int numberOfBytesToRead);
+	int FilePointerInfoRead(int resourceID, char* textBuffer, int numberOfBytesToRead);
+
 	FilePathContainer* GetFilePathContainerFromPath(char* fpath);
+	int FormatAvailableFileBufferContainer(char* buffer, int bufferSize, unsigned int someValue);
+	int PopulateFileDataContainer(FileHandleContainer* pFileHandleContainer);
 	int GetAvailableFilePointerInfoIndex();
-	int LinkAvailableFilePointerContainerWithHashesStruct(Hashes* pHashesStruct, int hashesStructIndex);
-	int AssertValidStructLinkage(int resourceID);
-	int SIXB44F0(char* fpath, FileAccessType fileAccessType, Hashes* pHashesStruct, int a4);
-	unsigned __int64 CalculateStatusDependentValue(Hashes* pHashesStruct, int base);
-	int InitializeFilePointerContainerFileHandleID(Hashes* pHashesStruct, int filePointerContainerIndex);
-	int SomeLargeFileReadingFunction(Hashes* pHashesStruct, char* fname, FileAccessType fileAccessType);
+	int GetResourceBufferSize(int resourceID);
+	int DoesFileHaveFileHandle(char* fname);
 
-	LARGE_INTEGER SetFilePointer(int resourceID, LARGE_INTEGER distToMove, DWORD moveMethod);
-	LARGE_INTEGER SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, DWORD moveMethod);
-	LARGE_INTEGER SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, DWORD moveMethod);
-	LARGE_INTEGER SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, DWORD moveMethod);
+	unsigned __int64 CalculateDataStartPosition(DATParser& DATParser, int base);
+	int InitializeFilePointerContainerFileHandleID(DATParser* pDATParser, int filePointerContainerIndex);
+	// DATParser* InitializeDATParser(char* fpath, void** ppEnd_out, size_t* pSize_out, FileAccessType fileAccessType);
+	DATParser* InitializeDATParser(char* fpath, size_t* pSize_out, FileAccessType fileAccessType);
+	int SomeLargeFileReadingFunction(DATParser& DATParser, char* fname, FileAccessType fileAccessType);
 
-	static constexpr int GetFileBufferContainersCount() { return 20; }
+	int SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParser* pDATParser);
+	int SIXB59E0(DATParser& DATParser, char* fname, char* dataBuffer, int maxDataSize);
 
-	// resource ID reference values
-	static constexpr int FileHandleContainersBase = 0;
-	static constexpr int FileBufferContainersBase = 1024;
-	static constexpr int FilePointerInfosBase = 2048;
-	static constexpr int MaximumValidResourceID = 4096;
+	LARGE_INTEGER SetFilePointer(int resourceID, LARGE_INTEGER distToMove, long moveMethod);
+	LARGE_INTEGER SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, long moveMethod);
+	LARGE_INTEGER SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, long moveMethod);
+	LARGE_INTEGER SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, long moveMethod);
 
-	static constexpr int MaxFilePathContainersCount = 100;
-	static constexpr int MaxFilePointerInfoCount = 20;
+	int AdvanceCriticalSection();
+	static inline int		 GetCriticalSectionIndex() { return CurrentCriticalSectionIndex; }
+	static CRITICAL_SECTION* GetCriticalSection(int criticalSectionIndex) { return CriticalSectionsArray[criticalSectionIndex]; }
+	static CRITICAL_SECTION* GetCurrentCriticalSection() { return CriticalSectionsArray[CurrentCriticalSectionIndex]; }
+
+	static inline void SetHashesStruct(DATParser* pDATParser) { pSomeDATParser = pDATParser; }
+
+	void LZ2K_AttemptRawRead();
+	int  LZ2K_UncompressData(char* compressedDataBuffer, char* uncompressedDataOut, int compressedSizeMinusHeader, int uncompressedSize);
 
 private:
+	// singleton instance
 	static inline FileIOManager* _instance = 0;
 
-	static inline int CriticalSectionIndex = -1;
+	static inline std::array<CRITICAL_SECTION*, 14> CriticalSectionsArray{ 0 };
 	static inline int CriticalSectionLockCount = 0;
-	static inline int FilesReadCounter = 0; // increments when Read is called
-	static inline int FilePathContainersCount = 0;
-	static inline int bCanFileBeReadNonsequentially = 0; // honestly a shot in the dark, don't really know what this is
-	static inline LARGE_INTEGER SomeFileStartPosition{ 0 };
-	static inline FilePointerInfo* pSomeFilePointerInfo = 0;
-	static inline FilePointerContainer* pSomeFilePointerContainer = 0;
-	static inline int FileDataBufferCharsCount = 0;
 
-	CRITICAL_SECTION* CriticalSectionsArray[14];
-	HANDLE FileHandlesArray[32];
-	FileHandleContainer FileHandleContainersArray[32];
-	FileBufferContainer FileBufferContainersArray[20];
-	FileDataContainer FileDataContainersArray[4];
-	FilePointerInfo FilePointerInfoArray[MaxFilePointerInfoCount];
-	FilePathContainer FilePathContainersArray[MaxFilePathContainersCount];
+	static inline int CurrentCriticalSectionIndex = -1; // is cycled and returned from AdvanceCriticalSection()
+	static inline int CriticalSectionIndex_CreateFileHandle = -1;  
+	static inline int CriticalSectionIndex_ResourceIndexing = -1;
+
+	static inline int FilesReadCounter = 0; // increments when Read is called
+	static inline int FileDataSize = 0;
+	static inline int someProcessingFlag = -1; // is set to 0 during the course of some functions' execution
+	static inline FileReadErrorCode fileReadErrorCode = FileReadErrorCode::NONE;
+	static inline int LatestWriteIndex = 0;
+	static inline int NumberOfCharsWritten = 0;
+	
+	static inline int LZ2KUncompressedFileSize = 0;
+	static inline int LZ2KCompressedFileSizeMinusHeader = 0;
+
+	static inline LARGE_INTEGER SomeFileStartPosition{ 0 };
+	static inline LARGE_INTEGER FileCursorDelta{ 0 };
+
+	static inline FilePointerContainer* pSomeFilePointerContainer = 0;
+	static inline DATParser* pSomeDATParser = 0;
+
+	static inline std::array<HANDLE, 64> FileHandlesArray{ (HANDLE)-1 };
+	static inline std::array<FileHandleContainer, 32> FileHandleContainersArray{0};
+
+	static inline std::array<FileBufferContainer, 16> FileBufferContainersArray{0};
+	static inline std::array<FileDataContainer, 4> FileDataContainersArray{0};
+
+	static inline FilePointerInfo* pSomeFilePointerInfo = 0;
+	static inline std::array<FilePointerInfo, 16> FilePointerInfoArray{0};
 
 	FilePathContainer DefaultFilePathContainer{};
+	static inline int FilePathContainersCount = 0;
+	static inline std::array<FilePathContainer, 16> FilePathContainersArray{0};
 
-	LARGE_INTEGER SomeLargeInteger;
+	static inline char LZ2KCompressedDataBuffer[32768]{0};
+	static inline char LZ2KUncompressedDataBuffer[32768]{0};
 
 	// wrappers for Windows api
 	int RawWrite(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToWrite);
 	int RawRead(int fileHandleIndex, LPVOID lpBuffer, int numberOfBytesToRead);
 	LARGE_INTEGER RawSetFilePointer(int fileHandleIndex, LARGE_INTEGER distToMove, int moveMethod);
-	void RawEnterCriticalSection(int criticalSectionIndex);
-	void RawLeaveCriticalSection(int criticalSectionIndex);
 };
+
+// ===================== FUNCTIONS =====================
+
+void RawEnterCriticalSection(int criticalSectionIndex);
+void RawLeaveCriticalSection(int criticalSectionIndex);
 
 #endif // LEGOINDY_FILEIO_H
