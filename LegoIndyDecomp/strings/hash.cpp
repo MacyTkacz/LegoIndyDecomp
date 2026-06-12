@@ -2,6 +2,7 @@
 #include <strings/strings.h>
 #include <strings/std.h>
 #include <fileio/fileio.h>
+#include <string.h>
 
 int GetHashIndex(DATParser* pDATParser, char *str) {
 
@@ -78,7 +79,7 @@ int GetHashIndex(DATParser* pDATParser, char *str) {
 
 }
 
-int __cdecl GetFormattedHashIndex(DATParser* pDATParser, char* str) {
+int GetFormattedHashIndex(DATParser* pDATParser, char* str) {
 
 	char path[256];
 	strncpy(path,( *str == '@' ? str+4 : str ),256);

@@ -167,7 +167,6 @@ LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/main.cpp.o: \
  /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/./strings/types.h \
  /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/./fileio/types.h \
  /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/./strings/types.h \
- /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/./fileio/types.h \
  /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/./strings/strings.h \
  /usr/include/c++/13/array /usr/include/c++/13/vector \
  /usr/include/c++/13/bits/stl_uninitialized.h \

@@ -12,6 +12,7 @@ LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o: /home/m
   /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/utils.h \
   /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/fileio/fileio.h \
   /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/fileio/macros.h \
+  /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/fileio/types.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
@@ -397,7 +398,6 @@ LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o: /home/macytkacz
   /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/std.h \
   /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/strings.h \
   /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/types.h \
-  /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/utils.h \
   /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/hash.h \
   /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/types.h \
   /usr/include/alloca.h \
@@ -464,7 +464,6 @@ LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o: /home/macytkacz
   /usr/include/c++/13/cstdint \
   /usr/include/c++/13/cstdio \
   /usr/include/c++/13/cstdlib \
-  /usr/include/c++/13/cstring \
   /usr/include/c++/13/cwchar \
   /usr/include/c++/13/debug/assertions.h \
   /usr/include/c++/13/debug/debug.h \

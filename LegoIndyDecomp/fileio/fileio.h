@@ -46,15 +46,15 @@ struct FileHandleContainer {
 // for reading files compressed in some way
 struct FilePointerInfo {
 	DATParser* pDATParser;
-	DWORD dw1;
+	uint32_t dw1;
 	LARGE_INTEGER fileStartPosition;
 	LARGE_INTEGER filePointerPosition;
-	DWORD fileDataSize;
-	DWORD fileDataSizeWhenFileTypeIsNonzero;
+	uint32_t fileDataSize;
+	uint32_t fileDataSizeWhenFileTypeIsNonzero;
 	int filePointerContainerIndex;
-	DWORD bIsInUse;
+	uint32_t bIsInUse;
 	FileType fileType;
-	DWORD dw4;
+	uint32_t dw4;
 };
 
 // ===================== CLASSES =====================
@@ -104,7 +104,7 @@ public:
 
 	// reads file data into an available FileDataContainer
 	int Read(FileHandleContainer* pFileHandleContainer);
-	int CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType);
+	int CreateFileHandle(const char* fpath, FileAccessType fileAccessType);
 	bool CloseFileHandle(int fileHandleIndex);
 	void CloseResource(int resourceID);
 	int ReadResourceData(int resourceID, char* textBuffer, int numberOfBytesToRead);
@@ -117,15 +117,12 @@ public:
 	int GetResourceBufferSize(int resourceID);
 	int DoesFileHaveFileHandle(char* fname);
 
-	unsigned __int64 CalculateDataStartPosition(DATParser& DATParser, int base);
-	int InitializeFilePointerContainerFileHandleID(DATParser* pDATParser, int filePointerContainerIndex);
+	uint64_t CalculateDataStartPosition(DATParser& DATParser, int base);
 	DATParser* InitializeDATParser(char* fpath, void** ppEnd_out, size_t* pSize_out, FileAccessType fileAccessType);
-	int SomeLargeFileReadingFunction(DATParser& DATParser, char* fname, FileAccessType fileAccessType);
 
 	int SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParser* pDATParser);
 	int SIXB59E0(DATParser& DATParser, char* fname, char* dataBuffer, int maxDataSize);
 
-	uint64_t CalculateDataStartPosition(DATParser& DATParser, int base);
 	int InitializeFilePointerContainerFileHandleID(DATParser* pDATParser, int filePointerContainerIndex);
 	// DATParser* InitializeDATParser(char* fpath, void** ppEnd_out, size_t* pSize_out, FileAccessType fileAccessType);
 	DATParser* InitializeDATParser(char* fpath, size_t* pSize_out, FileAccessType fileAccessType);
@@ -137,6 +134,10 @@ public:
 	static CRITICAL_SECTION* GetCurrentCriticalSection() { return CriticalSectionsArray[CurrentCriticalSectionIndex]; }
 
 	static inline void SetHashesStruct(DATParser* pDATParser) { pSomeDATParser = pDATParser; }
+	LARGE_INTEGER SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, unsigned long moveMethod);
+	LARGE_INTEGER SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, unsigned long moveMethod);
+	LARGE_INTEGER SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, unsigned long moveMethod);
+	LARGE_INTEGER SetFilePointer(int resourceID, LARGE_INTEGER distToMove, unsigned long moveMethod);
 
 	void LZ2K_AttemptRawRead();
 	int  LZ2K_UncompressData(char* compressedDataBuffer, char* uncompressedDataOut, int compressedSizeMinusHeader, int uncompressedSize);
