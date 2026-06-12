@@ -40,6 +40,17 @@ int FileIOManager::AdvanceCriticalSection() {
 	return CurrentCriticalSectionIndex;
 }
 
+// if within a valid range, increments CurrentCriticalSectionIndex and calls win32 InitializeCriticalSection
+// updates CriticalSectionLockCount
+int FileIOManager::AdvanceCriticalSection() {
+	if (CurrentCriticalSectionIndex > 12)
+		return 0;
+	CurrentCriticalSectionIndex++;
+	InitializeCriticalSection(CriticalSectionsArray[CurrentCriticalSectionIndex]);
+	CriticalSectionLockCount = CriticalSectionsArray[CurrentCriticalSectionIndex]->LockCount;
+	return CurrentCriticalSectionIndex;
+}
+
 int FileIOManager::CreateFileHandle(const char* fpath, FileAccessType fileAccessType) {
 
 	int fileHandleIndex;
@@ -471,10 +482,10 @@ int FileIOManager::GetAvailableFilePointerInfoIndex() {
 }
 
 // returns chunkNumber*256 if DATParser.status <= -2
-uint64_t FileIOManager::CalculateDataStartPosition(DATParser& DATParser, int chunkNumber) {
+unsigned __int64 FileIOManager::CalculateDataStartPosition(DATParser& DATParser, int chunkNumber) {
 
 	bool flag = DATParser.status <= -2;
-	return FileCursorDelta.QuadPart + (static_cast<int64_t>(chunkNumber) << (flag ? 8 : 0));
+	return FileCursorDelta.QuadPart + (static_cast<__int64>(chunkNumber) << (flag ? 8 : 0));
 
 }
 
@@ -776,7 +787,7 @@ int FileIOManager::FilePointerInfoRead(int resourceID, char* dataBuffer, int num
 
 	int remainingBytes = numberOfBytesToRead;
 
-	int64_t fpiOffsetFromEndOfData = fpi->fileStartPosition.QuadPart + fpi->fileDataSize - fpi->filePointerPosition.QuadPart;
+	__int64 fpiOffsetFromEndOfData = fpi->fileStartPosition.QuadPart + fpi->fileDataSize - fpi->filePointerPosition.QuadPart;
 	if (fpiOffsetFromEndOfData < 0)
 		fpiOffsetFromEndOfData = 0;
 
@@ -846,7 +857,7 @@ int FileIOManager::SIXB59E0(DATParser& DATParser, char* fname, char* dataBuffer,
 	int filePointerContainerIndex = pFilePointerInfo->filePointerContainerIndex;
 	FilePointerContainer* pFilePointerContainer = &pFilePointerInfo->pDATParser->filePointerContainersArray[filePointerContainerIndex];
 	resourceID = pFilePointerContainer->fileHandleID;
-	int64_t fileStartPosition = pFilePointerInfo->fileStartPosition.QuadPart;
+	__int64 fileStartPosition = pFilePointerInfo->fileStartPosition.QuadPart;
 
 	while ( pFilePointerInfo->filePointerPosition.QuadPart < 0 || FilePointerInfoRead(resourceID,dataBuffer,dataSize) < 0 ) {
 
@@ -907,13 +918,7 @@ int FileIOManager::TopLevelFileReadingFunction(char* fname, char* textBuffer, in
 
 }
 
-void DATParser::ParsePayload() {
-
-	
-
-}
-
-DATParser* FileIOManager::InitializeDATParser(char* fpath, size_t* pSize_out, FileAccessType fileAccessType) {
+DATParser* FileIOManager::InitializeDATParser(char* fpath, void** ppEnd_out, size_t* pSize_out, FileAccessType fileAccessType) {
 
 	int resourceID = SIXB44F0(fpath, fileAccessType, 0);
 	if (!resourceID)
@@ -929,11 +934,11 @@ DATParser* FileIOManager::InitializeDATParser(char* fpath, size_t* pSize_out, Fi
 	FilePointerContainer* pFilePointerContainer;
 	FilePointerInfo* pFilePointerInfo;
 
-	// read file header
-	int64_t qwFileHeader;
-	while ( ReadResourceData(resourceID,reinterpret_cast<char*>(&qwFileHeader),8) < 0 ) {
+	__int64 additionalStructLength;
+	// ensure additionalStructLength is read
+	while ( ReadResourceData(resourceID,reinterpret_cast<char*>(&additionalStructLength),8) < 0 ) {
 
-		int64_t filePointerPosition = FileCursorDelta.QuadPart;
+		__int64 filePointerPosition = FileCursorDelta.QuadPart;
 		do {
 
 			if (resourceID >= RSRCID_MAX)
@@ -970,32 +975,30 @@ DATParser* FileIOManager::InitializeDATParser(char* fpath, size_t* pSize_out, Fi
 		while( filePointerPosition < 0 );
 	}
 
-	int footerLength = qwFileHeader;
+	if ( additionalStructLength < 0 )
+		additionalStructLength *= -256;
 
-	if ( static_cast<int>( qwFileHeader >> 32 ) < 0 )
-		qwFileHeader *= -256;
+	__int64 bigsum = additionalStructLength + FileCursorDelta.QuadPart;
 
-	int64_t footerOffset = qwFileHeader + FileCursorDelta.QuadPart;
-
-	// advance footerOffset bytes into file data buffer
+	// WHAT ARE WE DOING HERE??
 	if (resourceID < RSRCID_MAX) {
-		int64_t newFilePointerPosition = footerOffset;
+		__int64 newFilePointerPosition = bigsum;
 		do {
 			FILERESOURCETYPESWITCH(resourceID)
 				CASE_FILEHANDLECONTAINER()
 					if (pFileHandleContainer->bSomeBool) {
-						pFileHandleContainer->filePointerPosition.QuadPart = footerOffset;
+						pFileHandleContainer->filePointerPosition.QuadPart = bigsum;
 					}
 					else
-						newFilePointerPosition = RawSetFilePointer(resourceID-1,ToLargeInt(footerOffset),FILE_BEGIN).QuadPart;
+						newFilePointerPosition = RawSetFilePointer(resourceID-1,ToLargeInt(bigsum),FILE_BEGIN).QuadPart;
 					break;
 				}
 				CASE_FILEBUFFERCONTAINER()
-					pFileBufferContainer->filePointerPosition = &pFileBufferContainer->textBuffer[footerOffset];
+					pFileBufferContainer->filePointerPosition = &pFileBufferContainer->textBuffer[bigsum];
 					break;
 				}
 				CASE_FILEPOINTERINFO()
-					LARGE_INTEGER distToMove = ToLargeInt( pFilePointerInfo->fileStartPosition.QuadPart + footerOffset );
+					LARGE_INTEGER distToMove = ToLargeInt( pFilePointerInfo->fileStartPosition.QuadPart + bigsum );
 					newFilePointerPosition = SetFilePointer(pFilePointerContainer->fileHandleID,distToMove,FILE_BEGIN).QuadPart;
 					pFilePointerInfo->filePointerPosition.QuadPart = newFilePointerPosition;
 					pFilePointerContainer->filePointerPosition.QuadPart = newFilePointerPosition;
@@ -1010,61 +1013,6 @@ DATParser* FileIOManager::InitializeDATParser(char* fpath, size_t* pSize_out, Fi
 	DefaultFilePathContainer.pathJoiningFunction(&DefaultFilePathContainer,fpathJoined,fpath,256);
 	// round up to next 16-byte chunk to ensure null-termination
 	int pathLength = ( _strlen(fpathJoined) + 16 ) & -16;
-	int structSize = footerLength + pathLength + 0xC0;
-
-	// if (!ppEnd_out) {
-	// 	CloseResource(resourceID);
-	// 	FileIOManager::someProcessingFlag = someProcessingFlag;
-	// 	return 0;
-	// }
-
-	// uintptr_t pAlignedAddress = reinterpret_cast<uintptr_t>( *ppEnd_out ) + 15;
-	// DATParser* pFinalDATParser = reinterpret_cast<DATParser*>( pAlignedAddress & -16 );
-
-	// *ppEnd_out += structSize;
-	// if (pSize_out)	
-	// 	*pSize_out = structSize;
-
-	DATParser* pFinalDATParser = new DATParser();
-	pFinalDATParser->someInt16 = 0;
-	pFinalDATParser->DATfileName = fpathJoined;	
-
-	if ( ReadResourceData(resourceID, &pFinalDATParser->rawPayload[0], footerLength) ) {
-		int64_t n = 0;
-		do {
-			do {
-				if (resourceID >= RSRCID_MAX)
-					break;
-				FILERESOURCETYPESWITCH(resourceID)
-					CASE_FILEHANDLECONTAINER()
-						if (pFileHandleContainer->bSomeBool) {
-							pFileHandleContainer->filePointerPosition = ToLargeInt(footerOffset);
-							n = footerOffset;
-							break;
-						}
-						n = RawSetFilePointer(resourceID-1,ToLargeInt(footerOffset),FILE_BEGIN).QuadPart;
-						break;
-					}
-					CASE_FILEBUFFERCONTAINER()
-						pFileBufferContainer->filePointerPosition = &pFileBufferContainer->textBuffer[footerOffset];
-						n = footerOffset;
-						break;
-					}
-					CASE_FILEPOINTERINFO()
-						LARGE_INTEGER distToMove = ToLargeInt(footerOffset+pFilePointerInfo->fileStartPosition.QuadPart);
-						n = SetFilePointer(pFilePointerContainer->fileHandleID,distToMove,FILE_BEGIN).QuadPart;
-						pFilePointerInfo->filePointerPosition = ToLargeInt(n);
-						pFilePointerContainer->filePointerPosition = ToLargeInt(n);
-					}
-				}
-			}
-			while ( n < 0 );
-		}
-		while ( ReadResourceData(resourceID, &pFinalDATParser->rawPayload[0], footerLength) );
-	}
-
-	// BEFORE WE CAN PROCEED, WE MUST PARSE rawPayload INTO ITS CONSTITUENT TYPES AND STORE IN pFinalDATParser
-
 
 	return nullptr;
 

@@ -1,7 +1,7 @@
 #include "lz2k.h"
 #include <memory.h>
 
-int LZ2K_DecodeUncompressedFileSize(char* textBuffer) {
+int __cdecl LZ2K_DecodeUncompressedFileSize(char* textBuffer) {
 
 	char compressionHeader[4];
 	char currentChar;
@@ -26,7 +26,7 @@ int LZ2K_DecodeUncompressedFileSize(char* textBuffer) {
 
 }
 
-int LZ2K_DecodeCompressedFileSize(char* textBuffer) {
+int __cdecl LZ2K_DecodeCompressedFileSize(char* textBuffer) {
 
 	char compressionHeader[4];
 	char currentChar;

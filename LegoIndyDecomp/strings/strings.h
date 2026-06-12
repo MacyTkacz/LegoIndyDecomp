@@ -35,13 +35,13 @@ inline PathType GlobalPathType = PathType::MIXEDCASE;
 // ===================== FUNCTIONS =====================
 
 // mutates path, replacing every instance of a back or forward slash with filePathInfo->separator ('\' if filePathInfo is NULL)
-char* MakePathUniform(FilePathInfo* filePathInfo, char* path);
+char* __cdecl MakePathUniform(FilePathInfo* filePathInfo, char* path);
 
 // returns pointer into str at first found instance of starts_with (inclusive)
 char* GetStringStartingWith(char* str, const char* starts_with);
 
 // resolves a single "/../" in a path, e.g. "C:/files/../a.txt" -> "C:/a.txt"
-char* ResolveRelativePathSpecifier(FilePathInfo* pFilePathInfo, char* path);
+char* __cdecl ResolveRelativePathSpecifier(FilePathInfo* pFilePathInfo, char* path);
 
 //if fpath is absolute:
 //   OUTPUT fpath

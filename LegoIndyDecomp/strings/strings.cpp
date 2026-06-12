@@ -1,7 +1,7 @@
 #include "strings.h"
 #include <strings/std.h>
 
-char *MakePathUniform(FilePathInfo *filePathInfo, char *path) {
+char *__cdecl MakePathUniform(FilePathInfo *filePathInfo, char *path) {
 
   char *currentPathOffset;
   char *currentWriteOffset;
@@ -92,7 +92,7 @@ char *GetStringStartingWith(char *str, const char *starts_with) {
   return result;
 }
 
-char* ResolveRelativePathSpecifier(FilePathInfo* pFilePathInfo, char* path) {
+char* __cdecl ResolveRelativePathSpecifier(FilePathInfo* pFilePathInfo, char* path) {
 
     char* result;
     char* currentPathOffset;

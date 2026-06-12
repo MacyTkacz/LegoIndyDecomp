@@ -1,6 +1,8 @@
 #ifndef LEGOINDY_FILEIO_MACROS_H
 #define LEGOINDY_FILEIO_MACROS_H
 
+#include "types.h"
+
 class FileIOManager;
 
 #define FILERESOURCETYPESWITCH(id) \

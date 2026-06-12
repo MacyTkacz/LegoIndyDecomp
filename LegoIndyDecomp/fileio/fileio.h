@@ -6,8 +6,6 @@
 #include <array>
 #include <vector>
 #include <string>
-#include <cstdint>
-#include <compatibility.h>
 
 // ==================== CONSTANTS ====================
 
@@ -48,15 +46,15 @@ struct FileHandleContainer {
 // for reading files compressed in some way
 struct FilePointerInfo {
 	DATParser* pDATParser;
-	long dw1;
+	DWORD dw1;
 	LARGE_INTEGER fileStartPosition;
 	LARGE_INTEGER filePointerPosition;
-	long fileDataSize;
-	long fileDataSizeWhenFileTypeIsNonzero;
+	DWORD fileDataSize;
+	DWORD fileDataSizeWhenFileTypeIsNonzero;
 	int filePointerContainerIndex;
-	long bIsInUse;
+	DWORD bIsInUse;
 	FileType fileType;
-	long dw4;
+	DWORD dw4;
 };
 
 // ===================== CLASSES =====================
@@ -80,28 +78,17 @@ public:
 	short someInt16;
 	FileAccessType fileAccessType;
 	FilePointerContainer filePointerContainersArray[8];
+
 	std::string DATfileName;
-
-	int someSixteenArrayStatus;
-	std::vector<SomeSixteen> SomeSixteenArray;
-
-	std::vector<Hash> hashArray;
-
 	std::string stringsBuffer;
-
+	std::vector<SomeSixteen> SomeSixteenArray;
+	std::vector<Hash> hashArray;
 	std::vector<int> hashes;
 
 	int someNum1;
 	int someNum2;
 	int numOfStringHashIndexPairs;
 	std::string stringHashIndexPairs;	
-
-	char rawPayload[0x10000];
-
-private:
-
-	// parse the rawPayload into its constituent types and store
-	void ParsePayload();
 
 };
 
@@ -117,7 +104,7 @@ public:
 
 	// reads file data into an available FileDataContainer
 	int Read(FileHandleContainer* pFileHandleContainer);
-	int CreateFileHandle(const char* fpath, FileAccessType fileAccessType);
+	int CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType);
 	bool CloseFileHandle(int fileHandleIndex);
 	void CloseResource(int resourceID);
 	int ReadResourceData(int resourceID, char* textBuffer, int numberOfBytesToRead);
@@ -130,19 +117,19 @@ public:
 	int GetResourceBufferSize(int resourceID);
 	int DoesFileHaveFileHandle(char* fname);
 
-	uint64_t CalculateDataStartPosition(DATParser& DATParser, int base);
+	unsigned __int64 CalculateDataStartPosition(DATParser& DATParser, int base);
 	int InitializeFilePointerContainerFileHandleID(DATParser* pDATParser, int filePointerContainerIndex);
-	// DATParser* InitializeDATParser(char* fpath, void** ppEnd_out, size_t* pSize_out, FileAccessType fileAccessType);
-	DATParser* InitializeDATParser(char* fpath, size_t* pSize_out, FileAccessType fileAccessType);
+	DATParser* InitializeDATParser(char* fpath, void** ppEnd_out, size_t* pSize_out, FileAccessType fileAccessType);
 	int SomeLargeFileReadingFunction(DATParser& DATParser, char* fname, FileAccessType fileAccessType);
 
 	int SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParser* pDATParser);
 	int SIXB59E0(DATParser& DATParser, char* fname, char* dataBuffer, int maxDataSize);
 
-	LARGE_INTEGER SetFilePointer(int resourceID, LARGE_INTEGER distToMove, unsigned long moveMethod);
-	LARGE_INTEGER SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, unsigned long moveMethod);
-	LARGE_INTEGER SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, unsigned long moveMethod);
-	LARGE_INTEGER SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, unsigned long moveMethod);
+	uint64_t CalculateDataStartPosition(DATParser& DATParser, int base);
+	int InitializeFilePointerContainerFileHandleID(DATParser* pDATParser, int filePointerContainerIndex);
+	// DATParser* InitializeDATParser(char* fpath, void** ppEnd_out, size_t* pSize_out, FileAccessType fileAccessType);
+	DATParser* InitializeDATParser(char* fpath, size_t* pSize_out, FileAccessType fileAccessType);
+	int SomeLargeFileReadingFunction(DATParser& DATParser, char* fname, FileAccessType fileAccessType);
 
 	int AdvanceCriticalSection();
 	static inline int		 GetCriticalSectionIndex() { return CurrentCriticalSectionIndex; }
