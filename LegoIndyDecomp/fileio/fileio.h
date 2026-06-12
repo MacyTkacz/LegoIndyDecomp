@@ -6,6 +6,8 @@
 #include <array>
 #include <vector>
 #include <string>
+#include <cstdint>
+#include <compatibility.h>
 
 // ==================== CONSTANTS ====================
 
@@ -115,7 +117,7 @@ public:
 
 	// reads file data into an available FileDataContainer
 	int Read(FileHandleContainer* pFileHandleContainer);
-	int CreateFileHandle(LPCSTR fpath, FileAccessType fileAccessType);
+	int CreateFileHandle(const char* fpath, FileAccessType fileAccessType);
 	bool CloseFileHandle(int fileHandleIndex);
 	void CloseResource(int resourceID);
 	int ReadResourceData(int resourceID, char* textBuffer, int numberOfBytesToRead);
@@ -128,7 +130,7 @@ public:
 	int GetResourceBufferSize(int resourceID);
 	int DoesFileHaveFileHandle(char* fname);
 
-	unsigned __int64 CalculateDataStartPosition(DATParser& DATParser, int base);
+	uint64_t CalculateDataStartPosition(DATParser& DATParser, int base);
 	int InitializeFilePointerContainerFileHandleID(DATParser* pDATParser, int filePointerContainerIndex);
 	// DATParser* InitializeDATParser(char* fpath, void** ppEnd_out, size_t* pSize_out, FileAccessType fileAccessType);
 	DATParser* InitializeDATParser(char* fpath, size_t* pSize_out, FileAccessType fileAccessType);
@@ -137,10 +139,10 @@ public:
 	int SIXB44F0(char* fpath, FileAccessType fileAccessType, DATParser* pDATParser);
 	int SIXB59E0(DATParser& DATParser, char* fname, char* dataBuffer, int maxDataSize);
 
-	LARGE_INTEGER SetFilePointer(int resourceID, LARGE_INTEGER distToMove, long moveMethod);
-	LARGE_INTEGER SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, long moveMethod);
-	LARGE_INTEGER SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, long moveMethod);
-	LARGE_INTEGER SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, long moveMethod);
+	LARGE_INTEGER SetFilePointer(int resourceID, LARGE_INTEGER distToMove, unsigned long moveMethod);
+	LARGE_INTEGER SetFilePointer(FilePointerInfo* pFilePointerInfo, LARGE_INTEGER distToMove, unsigned long moveMethod);
+	LARGE_INTEGER SetFilePointer(FileBufferContainer* pFileBufferContainer, LARGE_INTEGER distToMove, unsigned long moveMethod);
+	LARGE_INTEGER SetFilePointer(FileHandleContainer* pFileHandleContainer, LARGE_INTEGER distToMove, unsigned long moveMethod);
 
 	int AdvanceCriticalSection();
 	static inline int		 GetCriticalSectionIndex() { return CurrentCriticalSectionIndex; }

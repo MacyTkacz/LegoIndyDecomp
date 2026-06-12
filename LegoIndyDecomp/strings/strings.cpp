@@ -1,7 +1,7 @@
 #include "strings.h"
 #include <strings/std.h>
 
-char *__cdecl MakePathUniform(FilePathInfo *filePathInfo, char *path) {
+char *MakePathUniform(FilePathInfo *filePathInfo, char *path) {
 
   char *currentPathOffset;
   char *currentWriteOffset;
@@ -60,7 +60,7 @@ char *__cdecl MakePathUniform(FilePathInfo *filePathInfo, char *path) {
   return currentPathOffset;
 }
 
-char *__cdecl GetStringStartingWith(char *str, const char *starts_with) {
+char *GetStringStartingWith(char *str, const char *starts_with) {
   char *result; // eax
   int offset_into_string; // esi
   char *current_separator_offset; // ecx
@@ -92,7 +92,7 @@ char *__cdecl GetStringStartingWith(char *str, const char *starts_with) {
   return result;
 }
 
-char* __cdecl ResolveRelativePathSpecifier(FilePathInfo* pFilePathInfo, char* path) {
+char* ResolveRelativePathSpecifier(FilePathInfo* pFilePathInfo, char* path) {
 
     char* result;
     char* currentPathOffset;
@@ -133,7 +133,7 @@ LABEL_13:
     return result;
 }
 
-int __cdecl JoinPath(FilePathContainer* pFilePathContainer, char* fpath_out, char* fpath_in, int size) {
+int JoinPath(FilePathContainer* pFilePathContainer, char* fpath_out, char* fpath_in, int size) {
 
     char* structPath;
     char* structPathOffsetIntoPath;

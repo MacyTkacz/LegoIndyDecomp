@@ -1,6 +1,6 @@
 #include "std.h"
 
-int __cdecl _strcmpi(char* str1, char* str2) {
+int _strcmpi(char* str1, char* str2) {
 
     char str1_current_char;
     char str2_current_char;
@@ -29,7 +29,7 @@ int __cdecl _strcmpi(char* str1, char* str2) {
 
 }
 
-int __cdecl _strlen(char* str) {
+int _strlen(char* str) {
     char* strOffset;
     int i;
     strOffset = str;
@@ -38,7 +38,7 @@ int __cdecl _strlen(char* str) {
     return i;
 }
 
-int __cdecl _strncmp(char* str1, char* str2, int size) {
+int _strncmp(char* str1, char* str2, int size) {
 
     char* offsetStr1;
     char* offsetStr2;
@@ -97,7 +97,7 @@ LABEL_11:
 
 }
 
-char* __cdecl _strcat(char* dest, char* src) {
+char* _strcat(char* dest, char* src) {
     
     char* currentDestOffset;
     char* currentSrcOffset;
@@ -121,7 +121,7 @@ char* __cdecl _strcat(char* dest, char* src) {
 
 }
 
-int __cdecl _strcpy(char* dest, char* src) {
+int _strcpy(char* dest, char* src) {
 
     char* currentSrcOffset;
     char* currentDestOffset;

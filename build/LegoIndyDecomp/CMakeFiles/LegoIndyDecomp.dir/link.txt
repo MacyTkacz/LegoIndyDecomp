@@ -1,0 +1,1 @@
+g++ -g CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o CMakeFiles/LegoIndyDecomp.dir/main.cpp.o CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o CMakeFiles/LegoIndyDecomp.dir/strings/lz2k.cpp.o CMakeFiles/LegoIndyDecomp.dir/strings/std.cpp.o CMakeFiles/LegoIndyDecomp.dir/strings/strings.cpp.o -o LegoIndyDecomp 

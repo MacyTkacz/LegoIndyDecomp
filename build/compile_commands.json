@@ -1,0 +1,38 @@
+[
+{
+  "directory": "/home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp",
+  "command": "g++  -I/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/. -g -std=c++20 -g -o CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/fileio/fileiomanager.cpp",
+  "file": "/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/fileio/fileiomanager.cpp",
+  "output": "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o"
+},
+{
+  "directory": "/home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp",
+  "command": "g++  -I/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/. -g -std=c++20 -g -o CMakeFiles/LegoIndyDecomp.dir/main.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/main.cpp",
+  "file": "/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/main.cpp",
+  "output": "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/main.cpp.o"
+},
+{
+  "directory": "/home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp",
+  "command": "g++  -I/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/. -g -std=c++20 -g -o CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/hash.cpp",
+  "file": "/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/hash.cpp",
+  "output": "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o"
+},
+{
+  "directory": "/home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp",
+  "command": "g++  -I/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/. -g -std=c++20 -g -o CMakeFiles/LegoIndyDecomp.dir/strings/lz2k.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/lz2k.cpp",
+  "file": "/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/lz2k.cpp",
+  "output": "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/lz2k.cpp.o"
+},
+{
+  "directory": "/home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp",
+  "command": "g++  -I/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/. -g -std=c++20 -g -o CMakeFiles/LegoIndyDecomp.dir/strings/std.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/std.cpp",
+  "file": "/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/std.cpp",
+  "output": "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/std.cpp.o"
+},
+{
+  "directory": "/home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp",
+  "command": "g++  -I/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/. -g -std=c++20 -g -o CMakeFiles/LegoIndyDecomp.dir/strings/strings.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/strings.cpp",
+  "file": "/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/strings.cpp",
+  "output": "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/strings.cpp.o"
+}
+]

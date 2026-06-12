@@ -3,6 +3,7 @@
 
 #include <strings/types.h>
 #include "types.h"
+#include "utils.h"
 
 class DATParser;
 

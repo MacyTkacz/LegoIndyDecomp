@@ -24,8 +24,8 @@ struct FilePathContainer {
 	char pad4[32]; // 0x8C
 	char relativePath[16]; // 0xAC
 	char pad5[368]; // 0xBC
-	int (__cdecl* pathJoiningFunction)(FilePathContainer*, char* fpath_out, char* fpath_in, int size); // 0x22C
-	int (__cdecl* func2)(FilePathContainer*); // 0x230
+	int (*pathJoiningFunction)(FilePathContainer*, char* fpath_out, char* fpath_in, int size); // 0x22C
+	int (*func2)(FilePathContainer*); // 0x230
 };
 
 // ======================= DATA ========================
@@ -35,13 +35,13 @@ inline PathType GlobalPathType = PathType::MIXEDCASE;
 // ===================== FUNCTIONS =====================
 
 // mutates path, replacing every instance of a back or forward slash with filePathInfo->separator ('\' if filePathInfo is NULL)
-char* __cdecl MakePathUniform(FilePathInfo* filePathInfo, char* path);
+char* MakePathUniform(FilePathInfo* filePathInfo, char* path);
 
 // returns pointer into str at first found instance of starts_with (inclusive)
-char* __cdecl GetStringStartingWith(char* str, const char* starts_with);
+char* GetStringStartingWith(char* str, const char* starts_with);
 
 // resolves a single "/../" in a path, e.g. "C:/files/../a.txt" -> "C:/a.txt"
-char* __cdecl ResolveRelativePathSpecifier(FilePathInfo* pFilePathInfo, char* path);
+char* ResolveRelativePathSpecifier(FilePathInfo* pFilePathInfo, char* path);
 
 //if fpath is absolute:
 //   OUTPUT fpath
@@ -53,6 +53,6 @@ char* __cdecl ResolveRelativePathSpecifier(FilePathInfo* pFilePathInfo, char* pa
 //   else:
 //      OUTPUT fpath
 //OUTPUT [DRIVE:/][relative/path/]fpath
-int __cdecl JoinPath(FilePathContainer* pFilePathContainer, char* fname, char* fpath, int maxLength);
+int JoinPath(FilePathContainer* pFilePathContainer, char* fname, char* fpath, int maxLength);
 
 #endif // LEGOINDY_STRINGS_H
