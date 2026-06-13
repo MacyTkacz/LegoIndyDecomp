@@ -69,10 +69,24 @@ include LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/progress.make
 # Include the compile flags for this target's objects.
 include LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/flags.make
 
+LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/flags.make
+LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o: /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/compat/filesystem.cpp
+LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o"
+	cd /home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp && g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o -MF CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o.d -o CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/compat/filesystem.cpp
+
+LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.i"
+	cd /home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp && g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/compat/filesystem.cpp > CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.i
+
+LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.s"
+	cd /home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp && g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/compat/filesystem.cpp -o CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.s
+
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/flags.make
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o: /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/fileio/fileiomanager.cpp
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o"
 	cd /home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp && g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o -MF CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o.d -o CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/fileio/fileiomanager.cpp
 
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.i: cmake_force
@@ -86,7 +100,7 @@ LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.s: cmake_f
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/main.cpp.o: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/flags.make
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/main.cpp.o: /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/main.cpp
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/main.cpp.o: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/main.cpp.o"
 	cd /home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp && g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/main.cpp.o -MF CMakeFiles/LegoIndyDecomp.dir/main.cpp.o.d -o CMakeFiles/LegoIndyDecomp.dir/main.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/main.cpp
 
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/main.cpp.i: cmake_force
@@ -100,7 +114,7 @@ LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/main.cpp.s: cmake_force
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/flags.make
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o: /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/hash.cpp
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o"
 	cd /home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp && g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o -MF CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o.d -o CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/hash.cpp
 
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.i: cmake_force
@@ -114,7 +128,7 @@ LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.s: cmake_force
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/lz2k.cpp.o: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/flags.make
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/lz2k.cpp.o: /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/lz2k.cpp
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/lz2k.cpp.o: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/lz2k.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/lz2k.cpp.o"
 	cd /home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp && g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/lz2k.cpp.o -MF CMakeFiles/LegoIndyDecomp.dir/strings/lz2k.cpp.o.d -o CMakeFiles/LegoIndyDecomp.dir/strings/lz2k.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/lz2k.cpp
 
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/lz2k.cpp.i: cmake_force
@@ -128,7 +142,7 @@ LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/lz2k.cpp.s: cmake_force
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/std.cpp.o: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/flags.make
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/std.cpp.o: /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/std.cpp
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/std.cpp.o: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/std.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/std.cpp.o"
 	cd /home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp && g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/std.cpp.o -MF CMakeFiles/LegoIndyDecomp.dir/strings/std.cpp.o.d -o CMakeFiles/LegoIndyDecomp.dir/strings/std.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/std.cpp
 
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/std.cpp.i: cmake_force
@@ -142,7 +156,7 @@ LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/std.cpp.s: cmake_force
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/strings.cpp.o: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/flags.make
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/strings.cpp.o: /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/strings.cpp
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/strings.cpp.o: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/strings.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/strings.cpp.o"
 	cd /home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp && g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/strings.cpp.o -MF CMakeFiles/LegoIndyDecomp.dir/strings/strings.cpp.o.d -o CMakeFiles/LegoIndyDecomp.dir/strings/strings.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/strings.cpp
 
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/strings.cpp.i: cmake_force
@@ -155,6 +169,7 @@ LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/strings.cpp.s: cmake_force
 
 # Object files for target LegoIndyDecomp
 LegoIndyDecomp_OBJECTS = \
+"CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o" \
 "CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o" \
 "CMakeFiles/LegoIndyDecomp.dir/main.cpp.o" \
 "CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o" \
@@ -165,6 +180,7 @@ LegoIndyDecomp_OBJECTS = \
 # External object files for target LegoIndyDecomp
 LegoIndyDecomp_EXTERNAL_OBJECTS =
 
+LegoIndyDecomp/LegoIndyDecomp: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o
 LegoIndyDecomp/LegoIndyDecomp: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o
 LegoIndyDecomp/LegoIndyDecomp: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/main.cpp.o
 LegoIndyDecomp/LegoIndyDecomp: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o
@@ -173,7 +189,7 @@ LegoIndyDecomp/LegoIndyDecomp: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/stri
 LegoIndyDecomp/LegoIndyDecomp: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/strings.cpp.o
 LegoIndyDecomp/LegoIndyDecomp: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/build.make
 LegoIndyDecomp/LegoIndyDecomp: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable LegoIndyDecomp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable LegoIndyDecomp"
 	cd /home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/LegoIndyDecomp.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o"
+  "CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o.d"
   "CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o"
   "CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o.d"
   "CMakeFiles/LegoIndyDecomp.dir/main.cpp.o"

@@ -8,6 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/compat/filesystem.cpp" "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o" "gcc" "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o.d"
   "/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/fileio/fileiomanager.cpp" "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o" "gcc" "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o.d"
   "/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/main.cpp" "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/main.cpp.o" "gcc" "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/main.cpp.o.d"
   "/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/strings/hash.cpp" "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o" "gcc" "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/strings/hash.cpp.o.d"

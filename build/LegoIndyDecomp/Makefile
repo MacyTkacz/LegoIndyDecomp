@@ -130,6 +130,30 @@ LegoIndyDecomp/fast:
 	cd /home/macytkacz/Documents/LegoIndyDecomp/build && $(MAKE) $(MAKESILENT) -f LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/build.make LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/build
 .PHONY : LegoIndyDecomp/fast
 
+compat/filesystem.o: compat/filesystem.cpp.o
+.PHONY : compat/filesystem.o
+
+# target to build an object file
+compat/filesystem.cpp.o:
+	cd /home/macytkacz/Documents/LegoIndyDecomp/build && $(MAKE) $(MAKESILENT) -f LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/build.make LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o
+.PHONY : compat/filesystem.cpp.o
+
+compat/filesystem.i: compat/filesystem.cpp.i
+.PHONY : compat/filesystem.i
+
+# target to preprocess a source file
+compat/filesystem.cpp.i:
+	cd /home/macytkacz/Documents/LegoIndyDecomp/build && $(MAKE) $(MAKESILENT) -f LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/build.make LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.i
+.PHONY : compat/filesystem.cpp.i
+
+compat/filesystem.s: compat/filesystem.cpp.s
+.PHONY : compat/filesystem.s
+
+# target to generate assembly for a file
+compat/filesystem.cpp.s:
+	cd /home/macytkacz/Documents/LegoIndyDecomp/build && $(MAKE) $(MAKESILENT) -f LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/build.make LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.s
+.PHONY : compat/filesystem.cpp.s
+
 fileio/fileiomanager.o: fileio/fileiomanager.cpp.o
 .PHONY : fileio/fileiomanager.o
 
@@ -283,6 +307,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... LegoIndyDecomp"
+	@echo "... compat/filesystem.o"
+	@echo "... compat/filesystem.i"
+	@echo "... compat/filesystem.s"
 	@echo "... fileio/fileiomanager.o"
 	@echo "... fileio/fileiomanager.i"
 	@echo "... fileio/fileiomanager.s"

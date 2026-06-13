@@ -96,12 +96,12 @@ LegoIndyDecomp/clean: LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/clean
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/all:
 	$(MAKE) $(MAKESILENT) -f LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/build.make LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/depend
 	$(MAKE) $(MAKESILENT) -f LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/build.make LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=1,2,3,4,5,6,7 "Built target LegoIndyDecomp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8 "Built target LegoIndyDecomp"
 .PHONY : LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/all
 
 # Build rule for subdir invocation for target.
 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles 7
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles 8
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles 0
 .PHONY : LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/rule

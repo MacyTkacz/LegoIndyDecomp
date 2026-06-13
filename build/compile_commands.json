@@ -1,6 +1,12 @@
 [
 {
   "directory": "/home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp",
+  "command": "g++  -I/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/. -g -std=c++20 -g -o CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/compat/filesystem.cpp",
+  "file": "/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/compat/filesystem.cpp",
+  "output": "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/compat/filesystem.cpp.o"
+},
+{
+  "directory": "/home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp",
   "command": "g++  -I/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/. -g -std=c++20 -g -o CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o -c /home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/fileio/fileiomanager.cpp",
   "file": "/home/macytkacz/Documents/LegoIndyDecomp/LegoIndyDecomp/fileio/fileiomanager.cpp",
   "output": "LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir/fileio/fileiomanager.cpp.o"
