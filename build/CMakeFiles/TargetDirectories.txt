@@ -1,5 +1,0 @@
-/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles/edit_cache.dir
-/home/macytkacz/Documents/LegoIndyDecomp/build/CMakeFiles/rebuild_cache.dir
-/home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp/CMakeFiles/LegoIndyDecomp.dir
-/home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp/CMakeFiles/edit_cache.dir
-/home/macytkacz/Documents/LegoIndyDecomp/build/LegoIndyDecomp/CMakeFiles/rebuild_cache.dir
