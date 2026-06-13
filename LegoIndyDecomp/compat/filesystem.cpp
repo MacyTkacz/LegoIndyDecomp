@@ -1,13 +1,14 @@
 #ifndef _WIN32
  #include <unistd.h>
  #include <fcntl.h>
+ #include <errno.h>
 #endif
 
 #include "filesystem.h"
 
 using namespace FileSystem;
 
-std::shared_ptr<File> FileSystem::GetFile( const char* path, uint8_t accessType, uint8_t shareType, FileCreateMode createMode, uint64_t attributes ) {
+std::shared_ptr<File> FileSystem::GetFile( const char* path, uint8_t accessType, uint8_t shareType, uint8_t createMode, uint64_t attributes ) {
     FileHandle hFile;
 #ifdef _WIN32
 
@@ -23,7 +24,7 @@ std::shared_ptr<File> FileSystem::GetFile( const char* path, uint8_t accessType,
     if (attributes&FileAttribute::NORMAL) _attributes |= FILE_ATTRIBUTE_NORMAL;
 
     HANDLE h = CreateFileA( path, _accessType, _shareType, 0, createMode, _attributes, 0);
-    if (!h) return nullptr;
+    if (h==INVALID_HANDLE_VALUE) return nullptr;
 
     hFile.value = h;
 
@@ -44,13 +45,13 @@ std::shared_ptr<File> FileSystem::GetFile( const char* path, uint8_t accessType,
 END_ACCESS_TYPE:
     flags |= _accessType;
 
-    uint32_t _createMode = 0;
+    uint8_t _createMode = 0;
     switch(createMode) {
     case FileCreateMode::CREATE_NEW: flags |= (O_CREAT|O_EXCL); break;
     case FileCreateMode::CREATE_ALWAYS: {
-        if (attributes&FileAttribute::NORMAL)     
+        if ( attributes&FileAttribute::NORMAL && ( attributes&FileAttribute::HIDDEN || attributes&FileAttribute::SYSTEM ))     
             return nullptr;
-        flags |= (O_EXCL|O_TRUNC);
+        flags |= (O_CREAT | O_TRUNC);
         break;
     }
     case FileCreateMode::OPEN_ALWAYS: flags |= O_CREAT; break;

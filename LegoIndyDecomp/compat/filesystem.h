@@ -24,17 +24,23 @@ struct FileHandle {
 #endif
 };
 
+#ifdef _WIN32
+ #define FILECREATEMODE(mode) mode
+#else
+ enum FileCreateMode { CREATE_NEW=1, CREATE_ALWAYS, OPEN_EXISTING, OPEN_ALWAYS, TRUNCATE_EXISTING };
+ #define FILECREATEMODE(mode) FileSystem::FileCreateMode::mode
+#endif
+
 enum FilePosition { CURRENT, START, END };
 enum class FileAccessType { READ=1, WRITE=1<<1 };
 enum class FileShareType { NONE=1, READ=1<<1 };
-enum FileCreateMode { CREATE_NEW=1, CREATE_ALWAYS, OPEN_EXISTING, OPEN_ALWAYS, TRUNCATE_EXISTING };
-enum FileAttribute { NORMAL=1 };
+enum FileAttribute { HIDDEN=1<<2, SYSTEM=1<<3, NORMAL=1<<7 };
 class File {
 public:
 
-    File(FileHandle handle, uint8_t accessType, uint8_t shareType);
+    File(FileSystem::FileHandle handle, uint8_t accessType, uint8_t shareType);
 
-    bool SetPointer( FilePosition position );
+    bool SetPointer( FileSystem::FilePosition position );
     bool SetPointer( uint64_t position );
     bool SetEOF();
     bool Save();
@@ -50,14 +56,15 @@ public:
 
 private:
 
-    FileHandle handle;
+    FileSystem::FileHandle handle;
     uint64_t pointer;
     uint8_t accessType;
     uint8_t shareType;
 
 };
 // creates a new / retrieves an existing file
-std::shared_ptr<File> GetFile( const char* path, uint8_t accessType, uint8_t shareType, FileCreateMode createMode, uint64_t attributes );
+// relative to cwd on Win32, relative to executable on Unix
+std::shared_ptr<File> GetFile( const char* path, uint8_t accessType, uint8_t shareType, uint8_t createMode, uint64_t attributes );
 
 class Search {
 public:
@@ -67,6 +74,7 @@ private:
     const char searchPath[1024];
     std::shared_ptr<File> match;
 };
+
 std::unique_ptr<Search> FindFile( const char* searchPath );
 
 bool MoveFile( const char* existingPath, const char* newPath );
