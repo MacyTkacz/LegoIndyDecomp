@@ -73,7 +73,7 @@ END_ACCESS_TYPE:
 
     mode_t mode = 0;
     if (shareType&static_cast<uint8_t>(FileShareType::NONE)) mode |= S_IRUSR; // don't have a good solution for "no access until file handle closed" yet
-    if (shareType&static_cast<uint8_t>(FileShareType::READ)) mode |= S_IRUSR|S_IWUSR;
+    if (shareType&static_cast<uint8_t>(FileShareType::READ)) mode |= S_IRUSR;
 
     // more attributes will be accounted for as they're implemented
 
