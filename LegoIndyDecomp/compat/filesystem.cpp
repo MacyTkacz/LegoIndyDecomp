@@ -1,4 +1,6 @@
-#ifndef _WIN32
+#ifdef _WIN32
+ #include "utils.h"
+#else
  #include <unistd.h>
  #include <fcntl.h>
 #endif
@@ -12,6 +14,7 @@ using namespace FileSystem;
 bool FileSystem::Exists(const char* path) { return std::filesystem::exists(path); }
 bool FileSystem::CreateDirectory(const char* path) { return std::filesystem::create_directory(path); }
 bool FileSystem::DeleteFile( const char* path ) { return std::filesystem::remove(path); }
+uint64_t FileSystem::GetFileSize(const char* path) { return std::filesystem::file_size(path); };
 
 // UNIMPLEMENTED
 const char* FileSystem::GetKnownPath( KnownPath path ) { throw NotImplemented(); };
@@ -33,7 +36,7 @@ std::shared_ptr<File> FileSystem::GetFile( const char* path, uint8_t accessType,
     uint64_t _attributes = 0;
     if (attributes&FileAttribute::NORMAL) _attributes |= FILE_ATTRIBUTE_NORMAL;
 
-    HANDLE h = CreateFileA( path, _accessType, _shareType, 0, createMode, _attributes, 0);
+    HANDLE h = CreateFileA( path, _accessType, _shareType, nullptr, createMode, _attributes, 0);
     if (h==INVALID_HANDLE_VALUE) return nullptr;
 
     hFile.value = h;
@@ -68,10 +71,9 @@ END_ACCESS_TYPE:
     case FileCreateMode::TRUNCATE_EXISTING: flags |= O_TRUNC; break;
     }
 
-    // assigns user file permissions (may change from user to group or others, not sure yet)
     mode_t mode = 0;
-    if (shareType&static_cast<uint8_t>(FileShareType::NONE)) mode |= S_IRGRP; // don't have a good solution for "no access until file handle closed" yet
-    if (shareType&static_cast<uint8_t>(FileShareType::READ)) mode |= S_IRGRP;
+    if (shareType&static_cast<uint8_t>(FileShareType::NONE)) mode |= S_IRUSR; // don't have a good solution for "no access until file handle closed" yet
+    if (shareType&static_cast<uint8_t>(FileShareType::READ)) mode |= S_IRUSR|S_IWUSR;
 
     // more attributes will be accounted for as they're implemented
 
@@ -89,4 +91,76 @@ FileSystem::File::File(FileHandle handle, uint8_t accessType, uint8_t shareType)
     this->handle = handle;
     this->accessType = accessType;
     this->shareType = shareType;
+}
+
+bool FileSystem::File::SetPointer( FileSystem::FilePosition position, int64_t* newPosition ) {
+    if (position == FileSystem::FilePosition::CURRENT) return false;
+#ifdef _WIN32
+    uint8_t moveMethod = ( position == FileSystem::FilePosition::START ? FILE_BEGIN : FILE_END );
+    auto pliNewPosition = reinterpret_cast<LARGE_INTEGER*>(newPosition);
+    return SetFilePointerEx(this->handle.value,ToLargeInt(0),pliNewPosition,moveMethod);
+#else
+    uint8_t whence = ( position == FileSystem::FilePosition::START ? SEEK_SET : SEEK_END );
+    int64_t offset = lseek(this->handle.value,0,whence);
+    *newPosition = offset;
+    return offset != -1;
+#endif
+}
+
+bool FileSystem::File::SetPointer( uint64_t position, int64_t* newPosition ) {
+#ifdef _WIN32
+    uint8_t moveMethod = FILE_BEGIN;
+    auto pliNewPosition = reinterpret_cast<LARGE_INTEGER*>(newPosition);
+    return SetFilePointerEx(this->handle.value,ToLargeInt(position),pliNewPosition,moveMethod);
+#else
+    int64_t offset = lseek(this->handle.value,position,SEEK_SET);
+    *newPosition = offset;
+    return offset != -1;
+#endif
+}
+
+bool FileSystem::File::SetPointer( uint64_t distToMove, FileSystem::FilePosition moveMethod, int64_t* newPosition ) {
+#ifdef _WIN32
+    uint8_t _moveMethod;
+    switch(moveMethod) {
+        case FileSystem::FilePosition::CURRENT: _moveMethod = FILE_CURRENT; break; 
+        case FileSystem::FilePosition::START: _moveMethod = FILE_BEGIN; break; 
+        case FileSystem::FilePosition::END: _moveMethod = FILE_END; break; 
+        default: return -1;
+    }
+    auto pliNewPosition = reinterpret_cast<LARGE_INTEGER*>(newPosition);
+    return SetFilePointerEx(this->handle.value,ToLargeInt(distToMove),pliNewPosition,moveMethod);
+#else
+    uint8_t whence;
+    switch(moveMethod) {
+        case FileSystem::FilePosition::CURRENT: whence = SEEK_CUR; break; 
+        case FileSystem::FilePosition::START: whence = SEEK_SET; break; 
+        case FileSystem::FilePosition::END: whence = SEEK_END; break; 
+        default: return false;
+    }
+    int64_t offset = lseek(this->handle.value,distToMove,whence);
+    *newPosition = offset;
+    return offset != -1;
+#endif
+}
+
+bool FileSystem::File::Save() {
+#ifdef _WIN32
+    return FlushFileBuffers(this->handle.value);
+#else
+    return fsync(this->handle.value) == 0;
+#endif
+}
+
+bool FileSystem::File::Write( void* source, uint64_t bytesToWrite, uint64_t* bytesWritten ) {
+#ifdef _WIN32
+    DWORD _bytesWritten = 0;
+    bool success = WriteFile(this->handle.value,source,bytesToWrite,&_bytesWritten,nullptr);
+    *bytesWritten = _bytesWritten;
+    return success;
+#else
+    int64_t _bytesWritten = write(this->handle.value,source,bytesToWrite);
+    *bytesWritten = _bytesWritten != -1 ? _bytesWritten : 0;
+    return _bytesWritten != -1;
+#endif
 }

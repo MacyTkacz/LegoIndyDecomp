@@ -1,7 +1,6 @@
 #ifndef LEGOINDY_FILESYSTEM_H
 #define LEGOINDY_FILESYSTEM_H
 
-
 #ifdef _WIN32
  #include <Windows.h>
 #endif
@@ -37,21 +36,23 @@ bool MoveFile( const char* existingPath, const char* newPath );
 bool DeleteFile( const char* path );
 bool CreateDirectory(const char* path);
 bool Exists(const char* path);
+uint64_t GetFileSize(const char* path);
 
 class File {
 public:
 
     File(FileSystem::FileHandle handle, uint8_t accessType, uint8_t shareType);
 
-    bool SetPointer( FileSystem::FilePosition position );
-    bool SetPointer( uint64_t position );
+    bool SetPointer( FileSystem::FilePosition position, int64_t* newPosition );
+    bool SetPointer( uint64_t position, int64_t* newPosition );
+    bool SetPointer( uint64_t distToMove, FileSystem::FilePosition moveMethod, int64_t* newPosition );
+
     bool SetEOF();
     bool Save();
     bool Read( void* dest, uint64_t bytesToRead, uint64_t* bytesRead );
     bool Write( void* source, uint64_t bytesToWrite, uint64_t* bytesWritten );
 
     // in win32, these functions all use info from GetFileAttributesExA
-    uint64_t GetSize();
     uint64_t GetAttributes();
     uint64_t GetCreationTime();
     uint64_t GetLastAccessTime();
