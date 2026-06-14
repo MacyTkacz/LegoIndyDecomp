@@ -3,9 +3,20 @@
  #include <fcntl.h>
 #endif
 
+#include <filesystem>
 #include "filesystem.h"
+#include "error.h"
 
 using namespace FileSystem;
+
+bool FileSystem::Exists(const char* path) { return std::filesystem::exists(path); }
+bool FileSystem::CreateDirectory(const char* path) { return std::filesystem::create_directory(path); }
+bool FileSystem::DeleteFile( const char* path ) { return std::filesystem::remove(path); }
+
+// UNIMPLEMENTED
+const char* FileSystem::GetKnownPath( KnownPath path ) { throw NotImplemented(); };
+bool FileSystem::MoveFile( const char* existingPath, const char* newPath ) { throw NotImplemented(); };
+std::unique_ptr<Search> FindFile( const char* searchPath ) { throw NotImplemented(); };
 
 std::shared_ptr<File> FileSystem::GetFile( const char* path, uint8_t accessType, uint8_t shareType, uint8_t createMode, uint64_t attributes ) {
     FileHandle hFile;

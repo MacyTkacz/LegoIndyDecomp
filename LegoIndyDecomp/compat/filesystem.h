@@ -1,6 +1,7 @@
 #ifndef LEGOINDY_FILESYSTEM_H
 #define LEGOINDY_FILESYSTEM_H
 
+
 #ifdef _WIN32
  #include <Windows.h>
 #endif
@@ -10,11 +11,11 @@
 
 namespace FileSystem {
 
-bool CreateDirectory(const char* path);
-bool Exists(const char* path);
-
+enum class FileAccessType { READ=1, WRITE=1<<1 };
+enum class FileShareType { NONE=1, READ=1<<1 };
 enum KnownPath { DOCUMENTS, LOCAL_DATA };
-const char* GetKnownPath( KnownPath path );
+enum FilePosition { CURRENT, START, END };
+enum FileAttribute { HIDDEN=1<<2, SYSTEM=1<<3, NORMAL=1<<7 };
 
 struct FileHandle {
 #ifdef _WIN32
@@ -31,10 +32,12 @@ struct FileHandle {
  #define FILECREATEMODE(mode) FileSystem::FileCreateMode::mode
 #endif
 
-enum FilePosition { CURRENT, START, END };
-enum class FileAccessType { READ=1, WRITE=1<<1 };
-enum class FileShareType { NONE=1, READ=1<<1 };
-enum FileAttribute { HIDDEN=1<<2, SYSTEM=1<<3, NORMAL=1<<7 };
+const char* GetKnownPath( KnownPath path );
+bool MoveFile( const char* existingPath, const char* newPath );
+bool DeleteFile( const char* path );
+bool CreateDirectory(const char* path);
+bool Exists(const char* path);
+
 class File {
 public:
 
@@ -62,8 +65,8 @@ private:
     uint8_t shareType;
 
 };
+
 // creates a new / retrieves an existing file
-// relative to cwd on Win32, relative to executable on Unix
 std::shared_ptr<File> GetFile( const char* path, uint8_t accessType, uint8_t shareType, uint8_t createMode, uint64_t attributes );
 
 class Search {
@@ -76,9 +79,6 @@ private:
 };
 
 std::unique_ptr<Search> FindFile( const char* searchPath );
-
-bool MoveFile( const char* existingPath, const char* newPath );
-bool DeleteFile( const char* path );
 
 }; // namespace FileSystem
 
