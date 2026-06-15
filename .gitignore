@@ -4,3 +4,5 @@ build
 *.exe.id*
 *.exe.nam
 *.exe.til
+bin
+lib
