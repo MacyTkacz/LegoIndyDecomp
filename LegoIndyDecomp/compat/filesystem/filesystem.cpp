@@ -67,16 +67,16 @@ FileSystem::File::File(FileHandle handle, FileAccessType accessType, FileShareTy
     this->shareType = shareType;
 }
 
-bool FileSystem::File::SetPointer( FileSystem::FilePosition position, int64_t* newPosition ) {
-    if (position == FileSystem::FilePosition::CURRENT) return false;
+bool FileSystem::File::SetPointer( FilePosition position, int64_t* newPosition ) {
+    if (position == FilePosition::CURRENT) return false;
 #ifdef _WIN32
-    uint8_t moveMethod = ( position == FileSystem::FilePosition::START ? FILE_BEGIN : FILE_END );
+    uint8_t moveMethod = ( position == FilePosition::START ? FILE_BEGIN : FILE_END );
     LARGE_INTEGER* pliNewPosition = nullptr;
     if (newPosition)
         pliNewPosition = reinterpret_cast<LARGE_INTEGER*>(newPosition);
     return SetFilePointerEx(this->handle,ToLargeInt(0),pliNewPosition,moveMethod);
 #else
-    uint8_t whence = ( position == FileSystem::FilePosition::START ? SEEK_SET : SEEK_END );
+    uint8_t whence = ( position == FilePosition::START ? SEEK_SET : SEEK_END );
     int64_t offset = lseek(this->handle,0,whence);
     if (newPosition)
         *newPosition = offset;
@@ -99,13 +99,13 @@ bool FileSystem::File::SetPointer( uint64_t position, int64_t* newPosition ) {
 #endif
 }
 
-bool FileSystem::File::SetPointer( uint64_t distToMove, FileSystem::FilePosition moveMethod, int64_t* newPosition ) {
+bool FileSystem::File::SetPointer( uint64_t distToMove, FilePosition moveMethod, int64_t* newPosition ) {
 #ifdef _WIN32
     uint8_t _moveMethod;
     switch(moveMethod) {
-        case FileSystem::FilePosition::CURRENT: _moveMethod = FILE_CURRENT; break; 
-        case FileSystem::FilePosition::START: _moveMethod = FILE_BEGIN; break; 
-        case FileSystem::FilePosition::END: _moveMethod = FILE_END; break; 
+        case FilePosition::CURRENT: _moveMethod = FILE_CURRENT; break; 
+        case FilePosition::START: _moveMethod = FILE_BEGIN; break; 
+        case FilePosition::END: _moveMethod = FILE_END; break; 
         default: return -1;
     }
     LARGE_INTEGER* pliNewPosition = nullptr;
@@ -115,9 +115,9 @@ bool FileSystem::File::SetPointer( uint64_t distToMove, FileSystem::FilePosition
 #else
     uint8_t whence;
     switch(moveMethod) {
-        case FileSystem::FilePosition::CURRENT: whence = SEEK_CUR; break; 
-        case FileSystem::FilePosition::START: whence = SEEK_SET; break; 
-        case FileSystem::FilePosition::END: whence = SEEK_END; break; 
+        case FilePosition::CURRENT: whence = SEEK_CUR; break; 
+        case FilePosition::START: whence = SEEK_SET; break; 
+        case FilePosition::END: whence = SEEK_END; break; 
         default: return false;
     }
     int64_t offset = lseek(this->handle,distToMove,whence);
