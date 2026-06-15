@@ -14,6 +14,12 @@ constexpr T operator|(T a, T b) { return static_cast<T>( static_cast<std::underl
 
 namespace FileSystem {
 
+#ifdef _WIN32
+typedef HANDLE FileHandle;
+#else
+typedef int64_t FileHandle;
+#endif
+
 enum class FileAccessType : uint8_t {
     READ  = 1<<0,
     WRITE = 1<<1
@@ -30,14 +36,6 @@ enum FileCreateMode : uint8_t { _CREATE_NEW=1, _CREATE_ALWAYS, _OPEN_EXISTING, _
 enum FileAttribute : uint8_t { NORMAL=1<<0 };
 enum KnownPath { DOCUMENTS, LOCAL_DATA };
 enum FilePosition { CURRENT, START, END };
-
-struct FileHandle {
-#ifdef _WIN32
-    HANDLE value;
-#else
-    int64_t value;
-#endif
-};
 
 const char* GetKnownPath( KnownPath path );
 bool MoveFile( const char* existingPath, const char* newPath );
