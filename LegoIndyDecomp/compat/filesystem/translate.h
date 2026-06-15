@@ -27,14 +27,20 @@ constexpr uint64_t _FileAccessType(T accessType) {
 
 template <typename T>
 constexpr uint16_t _FileShareType(T shareType) {
+    const bool read = HasFlag(shareType,FileSystem::FileShareType::READ);
+    const bool write = HasFlag(shareType,FileSystem::FileShareType::WRITE);
 #ifdef _WIN32
     if (!shareType) return 0;
     uint16_t _shareType = 0;
-    if (HasFlag(shareType,FileSystem::FileShareType::READ)) _shareType |= FILE_SHARE_READ;
-    if (HasFlag(shareType,FileSystem::FileShareType::WRITE)) _shareType |= FILE_SHARE_WRITE;
+    if (read) _shareType |= FILE_SHARE_READ;
+    if (write) _shareType |= FILE_SHARE_WRITE;
     return _shareType;
 #else
-    return S_IRUSR;
+    if (!shareType) return S_IRUSR;
+    uint16_t _shareType = 0;
+    if (read) _shareType |= S_IRUSR;
+    if (write) _shareType |= S_IWUSR;
+    return _shareType;
 #endif
 }
 
