@@ -30,13 +30,13 @@ constexpr uint16_t _FileShareType(T shareType) {
     const bool read = HasFlag(shareType,FileSystem::FileShareType::READ);
     const bool write = HasFlag(shareType,FileSystem::FileShareType::WRITE);
 #ifdef _WIN32
-    if (!shareType) return 0;
+    if (!static_cast<uint8_t>(shareType)) return 0;
     uint16_t _shareType = 0;
     if (read) _shareType |= FILE_SHARE_READ;
     if (write) _shareType |= FILE_SHARE_WRITE;
     return _shareType;
 #else
-    if (!shareType) return S_IRUSR;
+    if (!static_cast<uint8_t>(shareType)) return S_IRUSR;
     uint16_t _shareType = 0;
     if (read) _shareType |= S_IRUSR;
     if (write) _shareType |= S_IWUSR;
@@ -64,13 +64,13 @@ constexpr uint16_t _FileCreateMode(T createMode) {
 namespace FileSystem {
 
 // convert enum to platform-specific value (Win32, Unix)
-template <typename Target, typename Value>
-constexpr uint64_t To(Value value) {
-    if ( std::is_same<Target,FileSystem::FileAccessType>::value )
+template <typename T>
+constexpr uint64_t To(T value) {
+    if ( std::is_same<T,FileSystem::FileAccessType>::value )
         return static_cast<uint64_t>(_FileAccessType(value));
-    if ( std::is_same<Target,FileSystem::FileShareType>::value )
+    if ( std::is_same<T,FileSystem::FileShareType>::value )
         return static_cast<uint64_t>(_FileShareType(value));
-    if ( std::is_same<Target,FileSystem::FileCreateMode>::value )
+    if ( std::is_same<T,FileSystem::FileCreateMode>::value )
         return static_cast<uint64_t>(_FileCreateMode(value));
 }
 

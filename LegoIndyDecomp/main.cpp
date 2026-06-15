@@ -4,17 +4,24 @@
 // debugging
 #include <cerrno>
 #include <cstring>
-void printErrorString() { std::cout << std::strerror(errno) << std::endl; }
+void printErrorString() {
+#ifdef _WIN32
+	std::cout << "error code: " << GetLastError() << std::endl;
+#else
+	std::cout << std::strerror(errno) << std::endl;
+#endif
+}
 
 int main() {
 
 	const char* path = "file.txt";
-	uint8_t accessType = static_cast<uint8_t>(FileSystem::FileAccessType::READ|FileSystem::FileAccessType::WRITE);
-	uint8_t shareType = static_cast<uint8_t>(FileSystem::FileShareType::READ|FileSystem::FileShareType::WRITE);
-	uint8_t createMode = static_cast<uint8_t>(FileSystem::FileCreateMode::_CREATE_ALWAYS); 
-	uint64_t attributes = FileSystem::FileAttribute::NORMAL;
+	auto accessType = FileSystem::FileAccessType::READ | FileSystem::FileAccessType::WRITE;
+	auto shareType = FileSystem::FileShareType::READ | FileSystem::FileShareType::WRITE;
+	auto createMode = FileSystem::FileCreateMode::_CREATE_ALWAYS; 
+	auto attributes = FileSystem::FileAttribute::NORMAL;
 
 	std::shared_ptr<FileSystem::File> pFile = FileSystem::GetFile(path,accessType,shareType,createMode,attributes);
+
 	if (!pFile) {
 		std::cout << "file creation failed :(" << std::endl;
 		printErrorString();

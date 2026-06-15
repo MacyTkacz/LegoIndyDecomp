@@ -24,7 +24,7 @@ const char* FileSystem::GetKnownPath( KnownPath path ) { throw NotImplemented();
 bool FileSystem::MoveFile( const char* existingPath, const char* newPath ) { throw NotImplemented(); };
 std::unique_ptr<Search> FindFile( const char* searchPath ) { throw NotImplemented(); };
 
-std::shared_ptr<File> FileSystem::GetFile( const char* path, uint8_t accessType, uint8_t shareType, uint8_t createMode, uint64_t attributes ) {
+std::shared_ptr<File> FileSystem::GetFile( const char* path, FileAccessType accessType, FileShareType shareType, FileCreateMode createMode, FileAttribute attributes ) {
     FileHandle hFile;
 #ifdef _WIN32
 
@@ -61,7 +61,7 @@ std::shared_ptr<File> FileSystem::GetFile( const char* path, uint8_t accessType,
     return pFile;
 }
 
-FileSystem::File::File(FileHandle handle, uint8_t accessType, uint8_t shareType) {
+FileSystem::File::File(FileHandle handle, FileAccessType accessType, FileShareType shareType) {
     this->handle = handle;
     this->accessType = accessType;
     this->shareType = shareType;

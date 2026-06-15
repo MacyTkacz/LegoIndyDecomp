@@ -47,7 +47,7 @@ uint64_t GetFileSize(const char* path);
 class File {
 public:
 
-    File(FileHandle handle, uint8_t accessType, uint8_t shareType);
+    File(FileHandle handle, FileAccessType accessType, FileShareType shareType);
 
     bool SetPointer( FilePosition position, int64_t* newPosition );
     bool SetPointer( uint64_t position, int64_t* newPosition );
@@ -68,13 +68,13 @@ private:
 
     FileHandle handle;
     uint64_t pointer;
-    uint8_t accessType;
-    uint8_t shareType;
+    FileAccessType accessType;
+    FileShareType shareType;
 
 };
 
 // creates a new / retrieves an existing file
-std::shared_ptr<File> GetFile( const char* path, uint8_t accessType, uint8_t shareType, uint8_t createMode, uint64_t attributes );
+std::shared_ptr<File> GetFile( const char* path, FileAccessType accessType, FileShareType shareType, FileCreateMode createMode, FileAttribute attributes );
 
 class Search {
 public:
