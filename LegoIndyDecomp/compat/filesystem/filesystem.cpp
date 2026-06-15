@@ -128,9 +128,7 @@ bool FileSystem::File::Save() {
 
 bool FileSystem::File::Write( void* source, uint64_t bytesToWrite, uint64_t* bytesWritten ) {
 #ifdef _WIN32
-    DWORD _bytesWritten = 0;
-    bool success = WriteFile(this->handle.value,source,bytesToWrite,&_bytesWritten,nullptr);
-    *bytesWritten = _bytesWritten;
+    bool success = WriteFile(this->handle.value,source,bytesToWrite,bytesWritten,nullptr);
     return success;
 #else
     int64_t _bytesWritten = write(this->handle.value,source,bytesToWrite);
