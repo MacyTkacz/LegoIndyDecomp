@@ -1,6 +1,5 @@
 ﻿#include <compat/filesystem/filesystem.h>
 #include <iostream>
-#include <string>
 
 int main() {
 
@@ -11,9 +10,16 @@ int main() {
 	uint64_t attributes = FileSystem::FileAttribute::NORMAL;
 
 	std::shared_ptr<FileSystem::File> pFile = FileSystem::GetFile(path,accessType,shareType,createMode,attributes);
+
 	std::string s("hello, world!");
-	pFile->Write(s.data(),s.length(),0);
+	pFile->Write(s.data(),s.length(),nullptr);
 	pFile->Save();
+
+	char buff[14];
+	pFile->SetPointer(FileSystem::FilePosition::START,nullptr);
+	pFile->Read(&buff,13,nullptr);
+
+	std::cout << buff << std::endl;
 
 	return 0;
 

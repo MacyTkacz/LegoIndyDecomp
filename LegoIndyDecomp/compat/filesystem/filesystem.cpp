@@ -71,12 +71,15 @@ bool FileSystem::File::SetPointer( FileSystem::FilePosition position, int64_t* n
     if (position == FileSystem::FilePosition::CURRENT) return false;
 #ifdef _WIN32
     uint8_t moveMethod = ( position == FileSystem::FilePosition::START ? FILE_BEGIN : FILE_END );
-    auto pliNewPosition = reinterpret_cast<LARGE_INTEGER*>(newPosition);
+    LARGE_INTEGER* pliNewPosition = nullptr;
+    if (newPosition)
+        pliNewPosition = reinterpret_cast<LARGE_INTEGER*>(newPosition);
     return SetFilePointerEx(this->handle.value,ToLargeInt(0),pliNewPosition,moveMethod);
 #else
     uint8_t whence = ( position == FileSystem::FilePosition::START ? SEEK_SET : SEEK_END );
     int64_t offset = lseek(this->handle.value,0,whence);
-    *newPosition = offset;
+    if (newPosition)
+        *newPosition = offset;
     return offset != -1;
 #endif
 }
@@ -84,11 +87,14 @@ bool FileSystem::File::SetPointer( FileSystem::FilePosition position, int64_t* n
 bool FileSystem::File::SetPointer( uint64_t position, int64_t* newPosition ) {
 #ifdef _WIN32
     uint8_t moveMethod = FILE_BEGIN;
-    auto pliNewPosition = reinterpret_cast<LARGE_INTEGER*>(newPosition);
+    LARGE_INTEGER* pliNewPosition = nullptr;
+    if (newPosition)
+        pliNewPosition = reinterpret_cast<LARGE_INTEGER*>(newPosition);
     return SetFilePointerEx(this->handle.value,ToLargeInt(position),pliNewPosition,moveMethod);
 #else
     int64_t offset = lseek(this->handle.value,position,SEEK_SET);
-    *newPosition = offset;
+    if (newPosition)
+        *newPosition = offset;
     return offset != -1;
 #endif
 }
@@ -102,7 +108,9 @@ bool FileSystem::File::SetPointer( uint64_t distToMove, FileSystem::FilePosition
         case FileSystem::FilePosition::END: _moveMethod = FILE_END; break; 
         default: return -1;
     }
-    auto pliNewPosition = reinterpret_cast<LARGE_INTEGER*>(newPosition);
+    LARGE_INTEGER* pliNewPosition = nullptr;
+    if (newPosition)
+        pliNewPosition = reinterpret_cast<LARGE_INTEGER*>(newPosition);
     return SetFilePointerEx(this->handle.value,ToLargeInt(distToMove),pliNewPosition,moveMethod);
 #else
     uint8_t whence;
@@ -113,7 +121,8 @@ bool FileSystem::File::SetPointer( uint64_t distToMove, FileSystem::FilePosition
         default: return false;
     }
     int64_t offset = lseek(this->handle.value,distToMove,whence);
-    *newPosition = offset;
+    if (newPosition)
+        *newPosition = offset;
     return offset != -1;
 #endif
 }
@@ -126,14 +135,27 @@ bool FileSystem::File::Save() {
 #endif
 }
 
-bool FileSystem::File::Write( void* source, uint64_t bytesToWrite, uint64_t* bytesWritten ) {
+bool FileSystem::File::Write( void* source, uint32_t bytesToWrite, unsigned long* bytesWritten ) {
 #ifdef _WIN32
-    bool success = WriteFile(this->handle.value,source,bytesToWrite,bytesWritten,nullptr);
+    LPDWORD _bytesWritten = bytesWritten ? static_cast<LPDWORD>(bytesWritten) : nullptr;
+    bool success = WriteFile(this->handle.value,source,bytesToWrite,_bytesWritten,nullptr);
     return success;
 #else
     int64_t _bytesWritten = write(this->handle.value,source,bytesToWrite);
     if (bytesWritten)
         *bytesWritten = _bytesWritten != -1 ? _bytesWritten : 0;
     return _bytesWritten != -1;
+#endif
+}
+
+bool FileSystem::File::Read( void* source, uint32_t bytesToRead, unsigned long* bytesRead ) {
+#ifdef _WIN32
+    LPDWORD _bytesRead = bytesRead ? static_cast<LPDWORD>(bytesRead) : nullptr;
+    return ReadFile(this->handle.value,source,bytesToRead,_bytesRead,nullptr);
+#else
+    int64_t _bytesRead = read(this->handle.value,source,bytesToRead);
+    if (bytesRead)
+        *bytesRead = _bytesRead != -1 ? _bytesRead : 0;
+    return _bytesRead != -1;
 #endif
 }
