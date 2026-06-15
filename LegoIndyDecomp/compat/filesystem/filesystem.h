@@ -47,11 +47,11 @@ uint64_t GetFileSize(const char* path);
 class File {
 public:
 
-    File(FileSystem::FileHandle handle, uint8_t accessType, uint8_t shareType);
+    File(FileHandle handle, uint8_t accessType, uint8_t shareType);
 
-    bool SetPointer( FileSystem::FilePosition position, int64_t* newPosition );
+    bool SetPointer( FilePosition position, int64_t* newPosition );
     bool SetPointer( uint64_t position, int64_t* newPosition );
-    bool SetPointer( uint64_t distToMove, FileSystem::FilePosition moveMethod, int64_t* newPosition );
+    bool SetPointer( uint64_t distToMove, FilePosition moveMethod, int64_t* newPosition );
 
     bool SetEOF();
     bool Save();
@@ -66,7 +66,7 @@ public:
 
 private:
 
-    FileSystem::FileHandle handle;
+    FileHandle handle;
     uint64_t pointer;
     uint8_t accessType;
     uint8_t shareType;
