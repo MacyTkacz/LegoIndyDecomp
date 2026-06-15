@@ -8,13 +8,28 @@
 #include <cstdint>
 #include <memory>
 
+// allows bitwise OR on enum classes
+template <typename T>
+constexpr T operator|(T a, T b) { return static_cast<T>( static_cast<std::underlying_type_t<T>>(a)|static_cast<std::underlying_type_t<T>>(b) ); }
+
 namespace FileSystem {
 
-enum class FileAccessType { READ=1, WRITE=1<<1 };
-enum class FileShareType { NONE=1, READ=1<<1 };
+enum class FileAccessType : uint8_t {
+    READ  = 1<<0,
+    WRITE = 1<<1
+};
+
+enum class FileShareType : uint8_t { 
+    NONE  = 1<<0,
+    READ  = 1<<1,
+    WRITE = 1<<2,
+};
+
+enum FileCreateMode : uint8_t { _CREATE_NEW=1, _CREATE_ALWAYS, _OPEN_EXISTING, _OPEN_ALWAYS, _TRUNCATE_EXISTING };
+
+enum FileAttribute : uint8_t { NORMAL=1<<0 };
 enum KnownPath { DOCUMENTS, LOCAL_DATA };
 enum FilePosition { CURRENT, START, END };
-enum FileAttribute { HIDDEN=1<<2, SYSTEM=1<<3, NORMAL=1<<7 };
 
 struct FileHandle {
 #ifdef _WIN32
@@ -23,13 +38,6 @@ struct FileHandle {
     int64_t value;
 #endif
 };
-
-#ifdef _WIN32
- #define FILECREATEMODE(mode) mode
-#else
- enum FileCreateMode { CREATE_NEW=1, CREATE_ALWAYS, OPEN_EXISTING, OPEN_ALWAYS, TRUNCATE_EXISTING };
- #define FILECREATEMODE(mode) FileSystem::FileCreateMode::mode
-#endif
 
 const char* GetKnownPath( KnownPath path );
 bool MoveFile( const char* existingPath, const char* newPath );

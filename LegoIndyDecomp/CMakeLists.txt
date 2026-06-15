@@ -1,11 +1,13 @@
-﻿file(GLOB_RECURSE SOURCE_FILES *.cpp)
-file(GLOB_RECURSE HEADER_FILES *.h)
+﻿# file(GLOB_RECURSE SOURCE_FILES *.cpp)
+# file(GLOB_RECURSE HEADER_FILES *.h)
+file(GLOB_RECURSE TEST_SOURCE_FILES compat/filesystem/*.cpp)
+file(GLOB_RECURSE TEST_HEADER_FILES compat/filesystem/*.h)
 
 set(CMAKE_CXX_COMPILER g++)
 
 # Add source to this project's executable.
 # add_executable (LegoIndyDecomp ${SOURCE_FILES} ${HEADER_FILES})
-add_executable (LegoIndyDecomp main.cpp compat/filesystem.h compat/filesystem.cpp error.h utils.h)
+add_executable (LegoIndyDecomp main.cpp error.h utils.h ${TEST_SOURCE_FILES} ${TEST_HEADER_FILES} )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
 	target_compile_options(LegoIndyDecomp PRIVATE -std=c++20 -g)
