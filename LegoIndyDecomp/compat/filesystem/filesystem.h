@@ -48,6 +48,12 @@ class File {
 public:
 
     File(FileHandle handle, FileAccessType accessType, FileShareType shareType);
+    ~File();
+
+    // prevents duplication of file handle
+    File(const File&) = delete;
+    File& operator=(const File&) = delete;
+    File(File&& other);
 
     bool SetPointer( FilePosition position, int64_t* newPosition );
     bool SetPointer( uint64_t position, int64_t* newPosition );
@@ -74,7 +80,7 @@ private:
 };
 
 // creates a new / retrieves an existing file
-std::shared_ptr<File> GetFile( const char* path, FileAccessType accessType, FileShareType shareType, FileCreateMode createMode, FileAttribute attributes );
+std::unique_ptr<File> GetFile( const char* path, FileAccessType accessType, FileShareType shareType, FileCreateMode createMode, FileAttribute attributes );
 
 class Search {
 public:

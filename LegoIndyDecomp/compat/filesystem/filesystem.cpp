@@ -24,7 +24,7 @@ const char* FileSystem::GetKnownPath( KnownPath path ) { throw NotImplemented();
 bool FileSystem::MoveFile( const char* existingPath, const char* newPath ) { throw NotImplemented(); };
 std::unique_ptr<Search> FindFile( const char* searchPath ) { throw NotImplemented(); };
 
-std::shared_ptr<File> FileSystem::GetFile( const char* path, FileAccessType accessType, FileShareType shareType, FileCreateMode createMode, FileAttribute attributes ) {
+std::unique_ptr<File> FileSystem::GetFile( const char* path, FileAccessType accessType, FileShareType shareType, FileCreateMode createMode, FileAttribute attributes ) {
     FileHandle hFile;
 #ifdef _WIN32
 
@@ -57,7 +57,7 @@ std::shared_ptr<File> FileSystem::GetFile( const char* path, FileAccessType acce
     hFile = fd;
 
 #endif
-    auto pFile = std::make_shared<File>( hFile, accessType, shareType );
+    auto pFile = std::make_unique<File>( hFile, accessType, shareType );
     return pFile;
 }
 
@@ -65,6 +65,25 @@ FileSystem::File::File(FileHandle handle, FileAccessType accessType, FileShareTy
     this->handle = handle;
     this->accessType = accessType;
     this->shareType = shareType;
+}
+
+FileSystem::File::~File() {
+#ifdef _WIN32
+    if (this->handle != INVALID_HANDLE_VALUE)
+        CloseHandle(this->handle);
+#else
+    if (this->handle >= 0)
+        close(this->handle);
+#endif
+}
+
+// safely transfers file handle, preventing duplication
+FileSystem::File::File(File&& other) : handle(other.handle) {
+#ifdef _WIN32
+    other.handle = INVALID_HANDLE_VALUE;
+#else
+    other.handle = -1;
+#endif
 }
 
 bool FileSystem::File::SetPointer( FilePosition position, int64_t* newPosition ) {
