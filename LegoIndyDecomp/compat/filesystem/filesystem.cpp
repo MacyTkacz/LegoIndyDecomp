@@ -23,6 +23,7 @@ uint64_t FileSystem::GetFileSize(const char* path) { return std::filesystem::fil
 const char* FileSystem::GetKnownPath( KnownPath path ) { throw NotImplemented(); };
 bool FileSystem::MoveFile( const char* existingPath, const char* newPath ) { throw NotImplemented(); };
 std::unique_ptr<Search> FindFile( const char* searchPath ) { throw NotImplemented(); };
+bool FileSystem::File::SetEOF() { throw NotImplemented(); };
 
 std::unique_ptr<File> FileSystem::GetFile( const char* path, FileAccessType accessType, FileShareType shareType, FileCreateMode createMode, FileAttribute attributes ) {
     FileHandle hFile;
