@@ -62,7 +62,7 @@ public:
     bool SetEOF();
     bool Save();
     bool Read( void* dest, uint32_t bytesToRead, unsigned long* bytesRead );
-    bool Write( void* source, uint32_t bytesToWrite, unsigned long* bytesWritten );
+    bool Write( const void* source, uint32_t bytesToWrite, unsigned long* bytesWritten );
 
     // in win32, these functions all use info from GetFileAttributesExA
     uint64_t GetAttributes();
@@ -87,7 +87,7 @@ public:
     bool FindNext();
     std::shared_ptr<File> Get();
 private:
-    const char searchPath[1024];
+    char searchPath[1024];
     std::shared_ptr<File> match;
 };
 

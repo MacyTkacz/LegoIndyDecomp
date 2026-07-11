@@ -1,5 +1,6 @@
 #ifdef _WIN32
  #include "utils.h"
+ #include <bit>
 #else
  #include <unistd.h>
  #include <fcntl.h>
@@ -93,7 +94,7 @@ bool FileSystem::File::SetPointer( FilePosition position, int64_t* newPosition )
     uint8_t moveMethod = ( position == FilePosition::START ? FILE_BEGIN : FILE_END );
     LARGE_INTEGER* pliNewPosition = nullptr;
     if (newPosition)
-        pliNewPosition = reinterpret_cast<LARGE_INTEGER*>(newPosition);
+        pliNewPosition = std::bit_cast<LARGE_INTEGER*>( newPosition );
     return SetFilePointerEx(this->handle,ToLargeInt(0),pliNewPosition,moveMethod);
 #else
     uint8_t whence = ( position == FilePosition::START ? SEEK_SET : SEEK_END );
@@ -109,7 +110,7 @@ bool FileSystem::File::SetPointer( uint64_t position, int64_t* newPosition ) {
     uint8_t moveMethod = FILE_BEGIN;
     LARGE_INTEGER* pliNewPosition = nullptr;
     if (newPosition)
-        pliNewPosition = reinterpret_cast<LARGE_INTEGER*>(newPosition);
+        pliNewPosition = std::bit_cast<LARGE_INTEGER*>( newPosition );
     return SetFilePointerEx(this->handle,ToLargeInt(position),pliNewPosition,moveMethod);
 #else
     int64_t offset = lseek(this->handle,position,SEEK_SET);
@@ -130,8 +131,8 @@ bool FileSystem::File::SetPointer( uint64_t distToMove, FilePosition moveMethod,
     }
     LARGE_INTEGER* pliNewPosition = nullptr;
     if (newPosition)
-        pliNewPosition = reinterpret_cast<LARGE_INTEGER*>(newPosition);
-    return SetFilePointerEx(this->handle,ToLargeInt(distToMove),pliNewPosition,moveMethod);
+        pliNewPosition = std::bit_cast<LARGE_INTEGER*>( newPosition );
+    return SetFilePointerEx(this->handle,ToLargeInt(distToMove),pliNewPosition,_moveMethod);
 #else
     uint8_t whence;
     switch(moveMethod) {
@@ -155,7 +156,7 @@ bool FileSystem::File::Save() {
 #endif
 }
 
-bool FileSystem::File::Write( void* source, uint32_t bytesToWrite, unsigned long* bytesWritten ) {
+bool FileSystem::File::Write( const void* source, uint32_t bytesToWrite, unsigned long* bytesWritten ) {
 #ifdef _WIN32
     LPDWORD _bytesWritten = bytesWritten ? static_cast<LPDWORD>(bytesWritten) : nullptr;
     bool success = WriteFile(this->handle,source,bytesToWrite,_bytesWritten,nullptr);

@@ -7,9 +7,11 @@ file(GLOB_RECURSE TEST_HEADER_FILES compat/filesystem/*.h)
 # add_executable (LegoIndyDecomp ${SOURCE_FILES} ${HEADER_FILES})
 add_executable (LegoIndyDecomp main.cpp error.h utils.h ${TEST_SOURCE_FILES} ${TEST_HEADER_FILES} )
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-	target_compile_options(LegoIndyDecomp PRIVATE -std=c++20 -g)
-endif()
+# warnings/errors
+target_compile_options(LegoIndyDecomp PRIVATE -Wall -Wextra -Werror )
+target_compile_options(LegoIndyDecomp PRIVATE -Wno-unused-parameter -Wno-comment )
+
+target_compile_options(LegoIndyDecomp PRIVATE -std=c++20 -g)
 
 if (WIN32)
 	target_link_options(LegoIndyDecomp PRIVATE -static-libstdc++ -static-libgcc)
