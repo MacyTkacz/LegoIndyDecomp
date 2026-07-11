@@ -62,7 +62,9 @@ public:
     bool SetEOF();
     bool Save();
     bool Read( void* dest, uint32_t bytesToRead, unsigned long* bytesRead );
+    bool Read( void* dest, uint32_t bytesToRead );
     bool Write( const void* source, uint32_t bytesToWrite, unsigned long* bytesWritten );
+    bool Write( const void* source, uint32_t bytesToWrite );
 
     // in win32, these functions all use info from GetFileAttributesExA
     uint64_t GetAttributes();
