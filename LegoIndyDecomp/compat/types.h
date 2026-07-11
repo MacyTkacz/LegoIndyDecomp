@@ -8,7 +8,7 @@ typedef union LARGE_INTEGER {
     unsigned long LowPart;
     long HighPart;
   };
-  long long QuadPart;
+  long long QuadPart = 0;
 } LARGE_INTEGER;
 
 #endif
