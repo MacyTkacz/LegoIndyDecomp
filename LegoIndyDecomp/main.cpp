@@ -14,13 +14,15 @@ void printErrorString() {
 
 int main() {
 
-	const char* path = "file.txt";
-	auto accessType = FileSystem::FileAccessType::READ | FileSystem::FileAccessType::WRITE;
-	auto shareType = FileSystem::FileShareType::READ | FileSystem::FileShareType::WRITE;
-	auto createMode = FileSystem::FileCreateMode::_CREATE_ALWAYS; 
-	auto attributes = FileSystem::FileAttribute::NORMAL;
+	using namespace FileSystem;
 
-	std::shared_ptr<FileSystem::File> pFile = FileSystem::GetFile(path,accessType,shareType,createMode,attributes);
+	const char* path = "file.txt";
+	auto accessType = FileAccessType::READ | FileAccessType::WRITE;
+	auto shareType = FileShareType::READ | FileShareType::WRITE;
+	auto createMode = FileCreateMode::_CREATE_ALWAYS; 
+	auto attributes = FileAttribute::NORMAL;
+
+	std::shared_ptr<File> pFile = GetFile(path,accessType,shareType,createMode,attributes);
 
 	if (!pFile) {
 		std::cout << "file creation failed :(" << std::endl;
@@ -33,7 +35,7 @@ int main() {
 	pFile->Save();
 
 	char buff[14];
-	pFile->SetPointer(FileSystem::FilePosition::START,nullptr);
+	pFile->SetPointer(FilePosition::START,nullptr);
 	pFile->Read(&buff,13,nullptr);
 
 	std::cout << buff << std::endl;
