@@ -19,7 +19,7 @@ int main() {
 	const char* path = "file.txt";
 	auto accessType = FileAccessType::READ | FileAccessType::WRITE;
 	auto shareType = FileShareType::READ | FileShareType::WRITE;
-	auto createMode = FileCreateMode::_CREATE_ALWAYS; 
+	auto createMode = FileCreateMode::_CREATE_NEW; 
 	auto attributes = FileAttribute::NORMAL;
 
 	std::shared_ptr<File> pFile = GetFile(path,accessType,shareType,createMode,attributes);
@@ -31,7 +31,7 @@ int main() {
 	}
 
 	std::string s("hello, world!");
-	pFile->Write(s.data(),s.length(),nullptr);
+	pFile->Write(s.data(),s.length());
 	pFile->Save();
 
 	char buff[14];

@@ -168,7 +168,7 @@ bool FileSystem::File::Write( const void* source, uint32_t bytesToWrite, unsigne
     return _bytesWritten != -1;
 #endif
 }
-bool FileSystem::File::Write( const void* source, uint32_t bytesToWrite ) { this->Write(source,bytesToWrite,nullptr); }
+bool FileSystem::File::Write( const void* source, uint32_t bytesToWrite ) { return this->Write(source,bytesToWrite,nullptr); }
 
 bool FileSystem::File::Read( void* source, uint32_t bytesToRead, unsigned long* bytesRead ) {
 #ifdef _WIN32
@@ -181,4 +181,4 @@ bool FileSystem::File::Read( void* source, uint32_t bytesToRead, unsigned long* 
     return _bytesRead != -1;
 #endif
 }
-bool FileSystem::File::Read( void* source, uint32_t bytesToRead ) { this->Read(source,bytesToRead,nullptr); }
+bool FileSystem::File::Read( void* source, uint32_t bytesToRead ) { return this->Read(source,bytesToRead,nullptr); }
