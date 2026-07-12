@@ -67,6 +67,11 @@ constexpr uint16_t _FileCreateMode(T createMode) {
 
 namespace FileSystem {
 
+// properly routes an enum type to its corresponding underscore-prefixed function
+#define HANDLE_ENUM(enum) \
+if ( std::is_same<T,FileSystem::enum>::value ) \
+    return static_cast<uint64_t>( _##enum( static_cast<FileSystem::enum>(value) ) );
+
 // convert enum to platform-specific value (Win32, Unix)
 template <typename T>
 constexpr uint64_t To(T value) {
@@ -74,6 +79,8 @@ constexpr uint64_t To(T value) {
     HANDLE_ENUM(FileShareType)
     HANDLE_ENUM(FileCreateMode)
 }
+
+#undef HANDLE_ENUM
 
 }
 

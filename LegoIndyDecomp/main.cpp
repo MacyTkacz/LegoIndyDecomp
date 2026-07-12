@@ -33,6 +33,7 @@ int main() {
 	}
 
 	char buff[256];
+	memset(buff,0,256);
 	pFile->SetPointer(FilePosition::START,nullptr);
 	pFile->Read(&buff,255);
 
