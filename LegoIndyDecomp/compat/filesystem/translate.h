@@ -8,6 +8,7 @@
 
 #include <type_traits>
 #include "filesystem.h"
+#include "utils.h"
 
 template <typename T, typename V>
 constexpr bool HasFlag(T value, V flag) { return ( static_cast<uint64_t>(value)&static_cast<uint64_t>(flag) ) != 0; }
@@ -49,15 +50,18 @@ constexpr uint16_t _FileCreateMode(T createMode) {
 #ifdef _WIN32
     return static_cast<uint16_t>(createMode);
 #else
-    if ( HasFlag(createMode,FileSystem::FileCreateMode::_CREATE_NEW) )
+    switch(createMode) {
+    case FileSystem::FileCreateMode::_CREATE_NEW:
         return O_CREAT|O_EXCL;
-    if ( HasFlag(createMode,FileSystem::FileCreateMode::_CREATE_ALWAYS) )
+    case FileSystem::FileCreateMode::_CREATE_ALWAYS:
         return O_CREAT|O_TRUNC;
-    if ( HasFlag(createMode,FileSystem::FileCreateMode::_OPEN_ALWAYS) )
+    case FileSystem::FileCreateMode::_OPEN_ALWAYS:
         return O_CREAT;
-    if ( HasFlag(createMode,FileSystem::FileCreateMode::_TRUNCATE_EXISTING) )
+    case FileSystem::FileCreateMode::_TRUNCATE_EXISTING:
         return O_TRUNC;
-    return 0;
+    default:
+        return 0;
+    }
 #endif
 }
 
@@ -66,12 +70,9 @@ namespace FileSystem {
 // convert enum to platform-specific value (Win32, Unix)
 template <typename T>
 constexpr uint64_t To(T value) {
-    if ( std::is_same<T,FileSystem::FileAccessType>::value )
-        return static_cast<uint64_t>(_FileAccessType(value));
-    if ( std::is_same<T,FileSystem::FileShareType>::value )
-        return static_cast<uint64_t>(_FileShareType(value));
-    if ( std::is_same<T,FileSystem::FileCreateMode>::value )
-        return static_cast<uint64_t>(_FileCreateMode(value));
+    HANDLE_ENUM(FileAccessType)
+    HANDLE_ENUM(FileShareType)
+    HANDLE_ENUM(FileCreateMode)
 }
 
 }
