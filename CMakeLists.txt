@@ -2,8 +2,10 @@
 # and include sub-projects here.
 #
 cmake_minimum_required (VERSION 3.10)
-
 project ("LegoIndyDecomp")
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

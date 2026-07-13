@@ -11,7 +11,7 @@ add_executable (LegoIndyDecomp main.cpp error.h utils.h ${TEST_SOURCE_FILES} ${T
 target_compile_options(LegoIndyDecomp PRIVATE -Wall -Wextra -Werror )
 target_compile_options(LegoIndyDecomp PRIVATE -Wno-unused-parameter -Wno-comment )
 
-target_compile_options(LegoIndyDecomp PRIVATE -std=c++20 -g)
+target_compile_options(LegoIndyDecomp PRIVATE -g)
 
 if (WIN32)
 	target_link_options(LegoIndyDecomp PRIVATE -static-libstdc++ -static-libgcc)
