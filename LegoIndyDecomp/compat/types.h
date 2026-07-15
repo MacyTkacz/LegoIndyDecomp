@@ -1,5 +1,4 @@
-#ifndef LEGOINDY_COMPAT_TYPES_H
-#define LEGOINDY_COMPAT_TYPES_H
+#pragma once
 
 #ifndef _WIN32
 
@@ -12,5 +11,3 @@ typedef union LARGE_INTEGER {
 } LARGE_INTEGER;
 
 #endif
-
-#endif LEGOINDY_COMPAT_TYPES_H

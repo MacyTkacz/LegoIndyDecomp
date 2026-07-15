@@ -1,5 +1,4 @@
-#ifndef LEGOINDY_FILEIO_H
-#define LEGOINDY_FILEIO_H
+#pragma once
 
 #include <strings/hash.h>
 #include <strings/strings.h>
@@ -195,5 +194,3 @@ private:
 
 void RawEnterCriticalSection(int criticalSectionIndex);
 void RawLeaveCriticalSection(int criticalSectionIndex);
-
-#endif // LEGOINDY_FILEIO_H

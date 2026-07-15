@@ -1,5 +1,4 @@
-#ifndef LEGOINDY_FILEIO_MACROS_H
-#define LEGOINDY_FILEIO_MACROS_H
+#pragma once
 
 #include "types.h"
 
@@ -16,5 +15,3 @@ class FileIOManager;
 
 #define CASE_FILEPOINTERINFO() \
     case FileResourceType::FILEPOINTERINFO: {
-
-#endif // LEGOINDY_FILEIO_MACROS_H

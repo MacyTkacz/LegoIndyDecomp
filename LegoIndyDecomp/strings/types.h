@@ -1,5 +1,4 @@
-#ifndef LEGOINDY_STRINGS_TYPES_H
-#define LEGOINDY_STRINGS_TYPES_H
+#pragma once
 
 // ===================== STRUCTS =====================
 
@@ -8,5 +7,3 @@ struct Hash {
 	short nextOnNonmatch;
 	char* str;
 };
-
-#endif // LEGOINDY_STRINGS_TYPES_H

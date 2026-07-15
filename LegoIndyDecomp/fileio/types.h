@@ -1,5 +1,4 @@
-#ifndef LEGOINDY_FILEIO_TYPES_H
-#define LEGOINDY_FILEIO_TYPES_H
+#pragma once
 
 #include <strings/types.h>
 #include <compatibility.h>
@@ -32,5 +31,3 @@ struct SomeSixteen {
 	int int3;
 	int int4;
 };
-
-#endif // LEGOINDY_FILEIO_TYPES_H

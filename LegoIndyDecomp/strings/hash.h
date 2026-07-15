@@ -1,5 +1,4 @@
-#ifndef LEGOINDY_HASH_H
-#define LEGOINDY_HASH_H
+#pragma once
 
 #include "types.h"
 #include <fileio/types.h>
@@ -33,5 +32,3 @@
 int GetHashIndex(DATParser* pDATParser, char* str);
 
 int GetFormattedHashIndex(DATParser* pDATParser, char* fpath);
-
-#endif // LEGOINDY_HASH_H

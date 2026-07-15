@@ -1,5 +1,4 @@
-#ifndef LEGOINDY_STRINGS_H
-#define LEGOINDY_STRINGS_H
+#pragma once
 
 // ====================== STRUCTS ======================
 
@@ -54,5 +53,3 @@ char* ResolveRelativePathSpecifier(FilePathInfo* pFilePathInfo, char* path);
 //      OUTPUT fpath
 //OUTPUT [DRIVE:/][relative/path/]fpath
 int JoinPath(FilePathContainer* pFilePathContainer, char* fname, char* fpath, int maxLength);
-
-#endif // LEGOINDY_STRINGS_H

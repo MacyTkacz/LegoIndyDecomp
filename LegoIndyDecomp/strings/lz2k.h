@@ -1,7 +1,6 @@
 // LZ2K is the file compression algorithm used by LIJ
 
-#ifndef LEGOINDY_LZ2K_H
-#define LEGOINDY_LZ2K_H
+#pragma once
 
 // ======================= DATA ========================
 
@@ -19,5 +18,3 @@ int LZ2K_DecodeUncompressedFileSize(char* textBuffer);
 // 1s place, 256s place, 65536s place (2 bytes LE)
 // adds 12 for header length
 int LZ2K_DecodeCompressedFileSize(char* textBuffer);
-
-#endif // LEGOINDY_LZ2K_H 

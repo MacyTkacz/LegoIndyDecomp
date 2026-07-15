@@ -1,5 +1,4 @@
-#ifndef LEGOINDY_COMPATIBILITY_H
-#define LEGOINDY_COMPATIBILITY_H
+#pragma once
 
 #include <cstdint>
 
@@ -36,5 +35,3 @@ bool ReadFile(HANDLE hFile, LPVOID lpBuffer, int numberOfBytesToRead, unsigned l
 bool SetFilePointerEx(HANDLE hFile, LARGE_INTEGER liDistanceToMove, LARGE_INTEGER* lpNewFilePointer, int dwMoveMethod);
 
 HANDLE CreateFileA(const char* fpath, uint64_t dwDesiredAccess, uint64_t dwShareMode, void* lpSecurityAttributes, uint64_t dwCreationDisposition, uint64_t dwFlagsAndAttributes, HANDLE hTemplateFile);
-
-#endif // LEGOINDY_COMPATIBILITY_H

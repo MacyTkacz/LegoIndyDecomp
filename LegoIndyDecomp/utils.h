@@ -1,5 +1,4 @@
-#ifndef LEGOINDY_UTILS_H
-#define LEGOINDY_UTILS_H
+#pragma once
 
 #ifdef _WIN32
  #include <windows.h>
@@ -73,5 +72,3 @@ LARGE_INTEGER ToLargeInt(T n) {
 }
 
 #endif // WIN32
-
-#endif // LEGOINDY_UTILS_H

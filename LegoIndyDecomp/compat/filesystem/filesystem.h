@@ -1,5 +1,4 @@
-#ifndef LEGOINDY_FILESYSTEM_H
-#define LEGOINDY_FILESYSTEM_H
+#pragma once
 
 #ifdef _WIN32
  #include <windows.h>
@@ -96,5 +95,3 @@ private:
 std::unique_ptr<Search> FindFile( const char* searchPath );
 
 }; // namespace FileSystem
-
-#endif // LEGOINDY_FILESYSTEM_H

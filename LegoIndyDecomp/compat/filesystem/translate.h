@@ -1,5 +1,4 @@
-#ifndef LEGOINDY_FILESYSTEM_TRANSLATE_H
-#define LEGOINDY_FILESYSTEM_TRANSLATE_H
+#pragma once
 
 #ifdef _WIN32
 #else
@@ -83,5 +82,3 @@ constexpr uint64_t To(T value) {
 #undef HANDLE_ENUM
 
 }
-
-#endif // LEGOINDY_FILESYSTEM_TRANSLATE_H
