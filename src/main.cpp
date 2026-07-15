@@ -1,4 +1,4 @@
-﻿#include <compat/filesystem/filesystem.h>
+﻿#include <filesystem.h>
 #include <iostream>
 
 // debugging
@@ -17,7 +17,7 @@ int main() {
 
 	using namespace FileSystem;
 
-	constexpr const char* path = "LegoIndyDecomp/compat/filesystem/filesystem.h";
+	constexpr const char* path = "include/filesystem.h";
 
 	auto accessType = FileAccessType::READ;
 	auto shareType = FileShareType::READ;
