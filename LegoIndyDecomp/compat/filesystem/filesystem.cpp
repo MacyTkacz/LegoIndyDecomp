@@ -63,27 +63,27 @@ std::unique_ptr<File> FileSystem::GetFile( const char* path, FileAccessType acce
 }
 
 FileSystem::File::File(FileHandle handle, FileAccessType accessType, FileShareType shareType) {
-    this->handle = handle;
-    this->accessType = accessType;
-    this->shareType = shareType;
+    this->m_handle = handle;
+    this->m_accessType = accessType;
+    this->m_shareType = shareType;
 }
 
 FileSystem::File::~File() {
 #ifdef _WIN32
-    if (this->handle != INVALID_HANDLE_VALUE)
-        CloseHandle(this->handle);
+    if (this->m_handle != INVALID_HANDLE_VALUE)
+        CloseHandle(this->m_handle);
 #else
-    if (this->handle >= 0)
-        close(this->handle);
+    if (this->m_handle >= 0)
+        close(this->m_handle);
 #endif
 }
 
 // safely transfers file handle, preventing duplication
-FileSystem::File::File(File&& other) : handle(other.handle) {
+FileSystem::File::File(File&& other) : m_handle(other.m_handle) {
 #ifdef _WIN32
-    other.handle = INVALID_HANDLE_VALUE;
+    other.m_handle = INVALID_HANDLE_VALUE;
 #else
-    other.handle = -1;
+    other.m_handle = -1;
 #endif
 }
 
@@ -94,10 +94,10 @@ bool FileSystem::File::SetPointer( FilePosition position, int64_t* newPosition )
     LARGE_INTEGER* pliNewPosition = nullptr;
     if (newPosition)
         pliNewPosition = std::bit_cast<LARGE_INTEGER*>( newPosition );
-    return SetFilePointerEx(this->handle,ToLargeInt(0),pliNewPosition,moveMethod);
+    return SetFilePointerEx(this->m_handle,ToLargeInt(0),pliNewPosition,moveMethod);
 #else
     uint8_t whence = ( position == FilePosition::START ? SEEK_SET : SEEK_END );
-    int64_t offset = lseek(this->handle,0,whence);
+    int64_t offset = lseek(this->m_handle,0,whence);
     if (newPosition)
         *newPosition = offset;
     return offset != -1;
@@ -110,9 +110,9 @@ bool FileSystem::File::SetPointer( uint64_t position, int64_t* newPosition ) {
     LARGE_INTEGER* pliNewPosition = nullptr;
     if (newPosition)
         pliNewPosition = std::bit_cast<LARGE_INTEGER*>( newPosition );
-    return SetFilePointerEx(this->handle,ToLargeInt(position),pliNewPosition,moveMethod);
+    return SetFilePointerEx(this->m_handle,ToLargeInt(position),pliNewPosition,moveMethod);
 #else
-    int64_t offset = lseek(this->handle,position,SEEK_SET);
+    int64_t offset = lseek(this->m_handle,position,SEEK_SET);
     if (newPosition)
         *newPosition = offset;
     return offset != -1;
@@ -131,7 +131,7 @@ bool FileSystem::File::SetPointer( uint64_t distToMove, FilePosition moveMethod,
     LARGE_INTEGER* pliNewPosition = nullptr;
     if (newPosition)
         pliNewPosition = std::bit_cast<LARGE_INTEGER*>( newPosition );
-    return SetFilePointerEx(this->handle,ToLargeInt(distToMove),pliNewPosition,_moveMethod);
+    return SetFilePointerEx(this->m_handle,ToLargeInt(distToMove),pliNewPosition,_moveMethod);
 #else
     uint8_t whence;
     switch(moveMethod) {
@@ -140,7 +140,7 @@ bool FileSystem::File::SetPointer( uint64_t distToMove, FilePosition moveMethod,
         case FilePosition::END: whence = SEEK_END; break; 
         default: return false;
     }
-    int64_t offset = lseek(this->handle,distToMove,whence);
+    int64_t offset = lseek(this->m_handle,distToMove,whence);
     if (newPosition)
         *newPosition = offset;
     return offset != -1;
@@ -149,19 +149,19 @@ bool FileSystem::File::SetPointer( uint64_t distToMove, FilePosition moveMethod,
 
 bool FileSystem::File::Save() {
 #ifdef _WIN32
-    return FlushFileBuffers(this->handle);
+    return FlushFileBuffers(this->m_handle);
 #else
-    return fsync(this->handle) == 0;
+    return fsync(this->m_handle) == 0;
 #endif
 }
 
 bool FileSystem::File::Write( const void* source, uint32_t bytesToWrite, unsigned long* bytesWritten ) {
 #ifdef _WIN32
     LPDWORD _bytesWritten = bytesWritten ? static_cast<LPDWORD>(bytesWritten) : nullptr;
-    bool success = WriteFile(this->handle,source,bytesToWrite,_bytesWritten,nullptr);
+    bool success = WriteFile(this->m_handle,source,bytesToWrite,_bytesWritten,nullptr);
     return success;
 #else
-    int64_t _bytesWritten = write(this->handle,source,bytesToWrite);
+    int64_t _bytesWritten = write(this->m_handle,source,bytesToWrite);
     if (bytesWritten)
         *bytesWritten = _bytesWritten != -1 ? _bytesWritten : 0;
     return _bytesWritten != -1;
@@ -172,9 +172,9 @@ bool FileSystem::File::Write( const void* source, uint32_t bytesToWrite ) { retu
 bool FileSystem::File::Read( void* source, uint32_t bytesToRead, unsigned long* bytesRead ) {
 #ifdef _WIN32
     LPDWORD _bytesRead = bytesRead ? static_cast<LPDWORD>(bytesRead) : nullptr;
-    return ReadFile(this->handle,source,bytesToRead,_bytesRead,nullptr);
+    return ReadFile(this->m_handle,source,bytesToRead,_bytesRead,nullptr);
 #else
-    int64_t _bytesRead = read(this->handle,source,bytesToRead);
+    int64_t _bytesRead = read(this->m_handle,source,bytesToRead);
     if (bytesRead)
         *bytesRead = _bytesRead != -1 ? _bytesRead : 0;
     return _bytesRead != -1;

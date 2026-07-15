@@ -74,10 +74,10 @@ public:
 
 private:
 
-    FileHandle handle;
-    uint64_t pointer;
-    FileAccessType accessType;
-    FileShareType shareType;
+    FileHandle m_handle;
+    uint64_t m_pointer;
+    FileAccessType m_accessType;
+    FileShareType m_shareType;
 
 };
 
