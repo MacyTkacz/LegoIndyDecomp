@@ -7,7 +7,6 @@
 
 #include <type_traits>
 #include <filesystem.h>
-#include <utils.h>
 
 template <typename T, typename V>
 constexpr bool HasFlag(T value, V flag) { return ( static_cast<uint64_t>(value)&static_cast<uint64_t>(flag) ) != 0; }
