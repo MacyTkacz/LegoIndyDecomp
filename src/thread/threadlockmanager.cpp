@@ -16,3 +16,5 @@ ThreadLock& ThreadLockManager::GetNewThreadLock() {
         throw ThreadLockPoolExceeded();
     return m_threadLocksPool[ m_currentIndex++ ];
 }
+
+namespace LIJ { ThreadLockManager& _ThreadLockManager = ThreadLockManager::Instance(); } // global instance

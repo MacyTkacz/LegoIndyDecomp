@@ -53,3 +53,5 @@ public:
 };
 
 }; // namespace Thread
+
+namespace LIJ { extern ThreadLockManager& _ThreadLockManager; } // global instance
