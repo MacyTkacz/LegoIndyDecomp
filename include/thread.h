@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <chrono>
+#include <utils/singleton.h>
 
 #define THREAD_LOCK_TIMEOUT 10s // normally defined in windows registry
 #define THREADLOCK_POOL_SIZE 12
@@ -27,15 +28,10 @@ private:
 };
 
 // singleton class for distributing references to a pool of ThreadLock objects
-class ThreadLockManager {
+class ThreadLockManager : public ISingleton<ThreadLockManager> {
 public:
     ThreadLock& GetNewThreadLock();
-
-    //singleton management
-    static ThreadLockManager& Instance();
 private:
-    static std::unique_ptr<ThreadLockManager> s_pInstance;
-
     uint8_t m_currentIndex = 0;
     std::array<ThreadLock,THREADLOCK_POOL_SIZE> m_threadLocksPool;
 };
