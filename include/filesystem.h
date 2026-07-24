@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <array>
 
 // allows bitwise OR on enum classes
 template <typename T>
@@ -94,4 +95,17 @@ private:
 
 std::unique_ptr<Search> FindFile( const char* searchPath );
 
+class FileHandlesManager {
+public:
+
+    //singleton management
+    static FileHandlesManager& Instance();
+private:
+    static std::unique_ptr<FileHandlesManager> s_pInstance;
+
+    std::array<FileHandle,64> m_fileHandlesArray;
+};
+
 }; // namespace FileSystem
+
+namespace LIJ { extern FileSystem::FileHandlesManager& _FileHandlesManager; } // global instance

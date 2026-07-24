@@ -1,7 +1,7 @@
 ﻿add_subdirectory(compat)
 add_subdirectory(thread)
 
-add_executable ( LegoIndyDecomp main.cpp )
+add_executable ( LegoIndyDecomp main.cpp fileio/filehandlesmanager.cpp )
 
 set(INCLUDED_ERROR_FLAGS -Wall -Wextra -Werror )
 set(EXCLUDED_ERROR_FLAGS -Wno-unused-parameter -Wno-comment )
