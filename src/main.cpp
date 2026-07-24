@@ -1,11 +1,17 @@
-﻿#include <filesystem.h>
-#include <iostream>
-#include <utils/error.h>
+﻿#include <iostream>
+#include <cstring>
+#include <thread.h>
+
+using namespace Thread;
+
+ThreadLockManager& tlm = ThreadLockManager::Instance();
 
 int main() {
-
-	ErrorUtils::PrintLastErrorStr();
-
+	ThreadLock& a1 = tlm.GetNewThreadLock();
+	a1.Lock();
+	ThreadLock& a2 = tlm.GetNewThreadLock();
+	a2.Lock();
+	a2.Unlock();
+	a1.Unlock();
 	return 0;
-
 }
